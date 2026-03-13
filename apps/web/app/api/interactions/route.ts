@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getInteractionSummaries } from "@/lib/interactions";
 
 export const runtime = "nodejs";
@@ -13,11 +14,28 @@ function toErrorResponse(status: number, error: string, details?: string) {
   );
 }
 
+const InteractionsQuerySchema = z.object({
+  postIdsRaw: z.string().optional(),
+  viewer: z.string().optional(),
+});
+
 export async function GET(request: NextRequest) {
   try {
-    const postIdsRaw = request.nextUrl.searchParams.get("postIds") ?? "";
-    const viewer = request.nextUrl.searchParams.get("viewer") ?? undefined;
-    const postIds = postIdsRaw
+    const rawPostIds = request.nextUrl.searchParams.get("postIds");
+    const rawViewer = request.nextUrl.searchParams.get("viewer");
+
+    const parsed = InteractionsQuerySchema.safeParse({
+      postIdsRaw: rawPostIds ?? undefined,
+      viewer: rawViewer ?? undefined,
+    });
+
+    if (!parsed.success) {
+      return toErrorResponse(400, "Invalid query parameters.", parsed.error.issues.map(i => i.message).join(", "));
+    }
+
+    const { postIdsRaw, viewer } = parsed.data;
+
+    const postIds = (postIdsRaw ?? "")
       .split(",")
       .map((v) => v.trim())
       .filter(Boolean)
@@ -32,4 +50,3 @@ export async function GET(request: NextRequest) {
     return toErrorResponse(500, "Failed to fetch interactions.", details);
   }
 }
-

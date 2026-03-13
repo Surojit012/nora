@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { listBookmarksByUser } from "@/lib/interactions";
 import { fetchShelbyPostById } from "@/lib/shelbyServer";
 
 export const runtime = "nodejs";
+
+const BookmarksQuerySchema = z.object({
+  viewer: z.string().min(1, "Viewer address is required"),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
 
 function toErrorResponse(status: number, error: string, details?: string) {
   return NextResponse.json(
@@ -30,9 +36,16 @@ async function mapWithConcurrency<T, R>(items: T[], concurrency: number, fn: (it
 
 export async function GET(request: NextRequest) {
   try {
-    const viewer = String(request.nextUrl.searchParams.get("viewer") ?? "").trim();
-    const limit = Math.max(1, Math.min(100, Number(request.nextUrl.searchParams.get("limit") ?? "50") || 50));
-    if (!viewer) return toErrorResponse(400, "viewer is required.");
+    const rawViewer = request.nextUrl.searchParams.get("viewer");
+    const rawLimit = request.nextUrl.searchParams.get("limit");
+    
+    const parsed = BookmarksQuerySchema.safeParse({ viewer: rawViewer, limit: rawLimit });
+    
+    if (!parsed.success) {
+      return toErrorResponse(400, "Invalid query parameters.", parsed.error.message);
+    }
+
+    const { viewer, limit } = parsed.data;
 
     const rows = await listBookmarksByUser({ viewer, limit });
     const postIds = rows.map((r) => r.post_id);
@@ -51,4 +64,3 @@ export async function GET(request: NextRequest) {
     return toErrorResponse(500, "Failed to fetch bookmarks.", details);
   }
 }
-

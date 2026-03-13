@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createShelbyPost, listShelbyPosts } from "@/lib/shelbyServer";
 
 const MAX_POST_LENGTH = 280;
@@ -18,14 +19,30 @@ function toErrorResponse(status: number, error: string, details?: string) {
   );
 }
 
+const PostsQuerySchema = z.object({
+  author: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+
 export async function GET(request: NextRequest) {
   try {
-    const author = request.nextUrl.searchParams.get("author") ?? undefined;
-    const limitRaw = request.nextUrl.searchParams.get("limit");
-    const limit = limitRaw ? Number(limitRaw) : undefined;
+    const rawAuthor = request.nextUrl.searchParams.get("author");
+    const rawLimit = request.nextUrl.searchParams.get("limit");
+
+    const parsed = PostsQuerySchema.safeParse({
+      author: rawAuthor ?? undefined,
+      limit: rawLimit ?? undefined,
+    });
+
+    if (!parsed.success) {
+      return toErrorResponse(400, "Invalid query parameters.", parsed.error.message);
+    }
+
+    const { author, limit } = parsed.data;
+
     const posts = await listShelbyPosts({
       ...(author ? { author } : {}),
-      ...(typeof limit === "number" && Number.isFinite(limit) ? { limit } : {})
+      ...(limit ? { limit } : {})
     });
     return NextResponse.json(posts);
   } catch (error) {
@@ -37,6 +54,15 @@ export async function GET(request: NextRequest) {
     return toErrorResponse(500, "Failed to fetch posts.", details);
   }
 }
+
+// Form schema for basic inputs
+const PostFormSchema = z.object({
+  content: z.string().trim().max(MAX_POST_LENGTH),
+  author: z.string().trim().min(1, "Author is required"),
+  location: z.string().trim().optional(),
+  gifUrl: z.string().url().optional(),
+  scheduledAt: z.coerce.number().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,17 +88,19 @@ export async function POST(request: NextRequest) {
       | undefined;
     let gifUrl: string | undefined;
 
+    let rawData: Record<string, any> = {};
+    let files: File[] = [];
+
     if (contentType.includes("multipart/form-data")) {
       const form = await request.formData();
-      content = String(form.get("content") ?? "").trim();
-      author = String(form.get("author") ?? "").trim();
-      location = String(form.get("location") ?? "").trim() || undefined;
-      gifUrl = String(form.get("gif_url") ?? "").trim() || undefined;
-      const scheduledRaw = String(form.get("scheduled_at") ?? "").trim();
-      if (scheduledRaw) {
-        const parsed = Date.parse(scheduledRaw);
-        if (!Number.isNaN(parsed)) scheduledAt = parsed;
-      }
+      rawData = {
+        content: form.get("content") || "",
+        author: form.get("author") || "",
+        location: form.get("location") || undefined,
+        gifUrl: form.get("gif_url") || undefined,
+        scheduledAt: form.get("scheduled_at") || undefined,
+      };
+
       const pollRaw = String(form.get("poll") ?? "").trim();
       if (pollRaw) {
         try {
@@ -86,11 +114,39 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const files = form.getAll("files").filter((v): v is File => v instanceof File);
+      files = form.getAll("files").filter((v): v is File => v instanceof File);
       if (files.length > MAX_ATTACHMENTS) {
         return toErrorResponse(400, `Max ${MAX_ATTACHMENTS} attachments.`);
       }
 
+    } else {
+      const body = await request.json();
+      rawData = {
+        content: body?.content || "",
+        author: body?.author || "",
+        location: body?.location || undefined,
+        gifUrl: body?.gifUrl || undefined,
+        scheduledAt: body?.scheduledAt || undefined,
+      };
+
+      if (body?.poll && Array.isArray(body.poll.options)) {
+        const options = body.poll.options.map((o: unknown) => String(o).trim()).filter(Boolean).slice(0, 4);
+        poll = options.length >= 2 ? { options } : undefined;
+      }
+    }
+
+    const parsed = PostFormSchema.safeParse(rawData);
+    if (!parsed.success) {
+      return toErrorResponse(400, "Invalid post data.", parsed.error.issues.map(i => i.message).join(", "));
+    }
+
+    content = parsed.data.content;
+    author = parsed.data.author;
+    location = parsed.data.location;
+    gifUrl = parsed.data.gifUrl;
+    scheduledAt = parsed.data.scheduledAt;
+
+    if (files.length > 0) {
       const now = Date.now();
       attachments = await Promise.all(
         files.map(async (file) => {
@@ -108,27 +164,6 @@ export async function POST(request: NextRequest) {
           };
         })
       );
-    } else {
-      const body = await request.json();
-      content = String(body?.content ?? "").trim();
-      author = String(body?.author ?? "").trim();
-      location = typeof body?.location === "string" ? body.location.trim() : undefined;
-      gifUrl = typeof body?.gifUrl === "string" ? body.gifUrl.trim() : undefined;
-      if (typeof body?.scheduledAt === "string") {
-        const parsed = Date.parse(body.scheduledAt);
-        if (!Number.isNaN(parsed)) scheduledAt = parsed;
-      }
-      if (body?.poll && Array.isArray(body.poll.options)) {
-        const options = body.poll.options.map((o: unknown) => String(o).trim()).filter(Boolean).slice(0, 4);
-        poll = options.length >= 2 ? { options } : undefined;
-      }
-    }
-
-    if (content.length > MAX_POST_LENGTH) {
-      return toErrorResponse(400, "Content must be 280 characters or less.");
-    }
-    if (!author) {
-      return toErrorResponse(400, "Author is required.");
     }
 
     // If text is empty, require at least one non-text feature.
