@@ -1,0 +1,19 @@
+{
+  "name": "nora-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --filter=@nora/web",
+    "build": "turbo run build --filter=@nora/web",
+    "lint": "turbo run lint --filter=@nora/web",
+    "typecheck": "turbo run typecheck --filter=@nora/web"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.12"
+  }
+}
