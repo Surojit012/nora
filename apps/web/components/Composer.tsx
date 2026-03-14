@@ -374,16 +374,64 @@ export function Composer() {
           </div>
         ) : null}
 
-        {createPostMutation.isSuccess ? (
-          <div className="tweet-text" style={{ marginTop: 10, color: "var(--muted)", fontSize: 12 }}>
-            Post published.
-            {createPostMutation.data?.txHash ? (
-              <>
-                {" "}
-                <span style={{ fontFamily: "var(--font-mono)" }}>
-                  Tx: {createPostMutation.data.txHash.slice(0, 12)}...{createPostMutation.data.txHash.slice(-8)}
-                </span>
-              </>
+        {createPostMutation.isSuccess && createPostMutation.data ? (
+          <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            {createPostMutation.data.blobId ? (
+              <a
+                href={`https://api.shelbynet.shelby/blob/${createPostMutation.data.blobId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="action-icon-btn"
+                style={{
+                  padding: "6px 12px",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: "1px solid var(--border2)",
+                  borderRadius: 16,
+                  color: "var(--text)",
+                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+                View Blob
+              </a>
+            ) : null}
+
+            {createPostMutation.data.txHash ? (
+              <a
+                href={`https://explorer.aptoslabs.com/txn/${createPostMutation.data.txHash}?network=testnet`}
+                target="_blank"
+                rel="noreferrer"
+                className="action-icon-btn"
+                style={{
+                  padding: "6px 12px",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: "1px solid var(--border2)",
+                  borderRadius: 16,
+                  color: "var(--text)",
+                  textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                View Transaction
+              </a>
             ) : null}
           </div>
         ) : null}

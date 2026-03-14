@@ -20,4 +20,5 @@ export type Post = {
   txExplorerUrl?: string;
   shelbyTxExplorerUrl?: string;
   shelbyExplorerUrl?: string;
+  blobId?: string;
 };
