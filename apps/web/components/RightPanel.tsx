@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { FollowButton } from "@/components/FollowButton";
 
@@ -19,8 +20,10 @@ export function RightPanel() {
   const mountedRef = useRef(false);
   const { account } = useWallet();
   const viewer = account?.address?.toString() ?? "";
+  const router = useRouter();
   const [trending, setTrending] = useState<TrendingResponse | null>(null);
   const [creators, setCreators] = useState<TopCreator[]>([]);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     mountedRef.current = true;
@@ -55,13 +58,26 @@ export function RightPanel() {
 
   return (
     <>
-      <div className="search-bar">
+      <form
+        className="search-bar"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const value = search.trim();
+          if (!value) return;
+          router.push(`/search?q=${encodeURIComponent(value)}`);
+        }}
+      >
         <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="8" cy="8" r="5" />
           <path d="M14 14l3 3" strokeLinecap="round" />
         </svg>
-        <input type="text" placeholder="Search" readOnly />
-      </div>
+        <input
+          type="text"
+          placeholder="Search usernames"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </form>
 
       <div className="widget">
         <div className="widget-title">Trends for you</div>

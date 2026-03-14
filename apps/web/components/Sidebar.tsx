@@ -58,26 +58,6 @@ const navItems: NavItem[] = [
     )
   },
   {
-    href: "/messages",
-    label: "Messages",
-    icon: (
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        width="18"
-        height="18"
-      >
-        <path
-          d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  },
-  {
     href: "/bookmarks",
     label: "Bookmarks",
     icon: (
