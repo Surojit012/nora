@@ -268,10 +268,13 @@ async function indexHashtagsForPost(args: {
   timestamp: number;
   content: string;
 }) {
-  const tags = extractHashtags(args.content);
+  const tags = extractHashtags(args.content)
+    .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
+    .filter(Boolean);
   if (tags.length === 0) return;
 
   const supabase = getSupabaseAdmin();
+  const normalizedTimestamp = args.timestamp > 1_000_000_000_000 ? args.timestamp : args.timestamp * 1000;
 
   // Ensure tag rows exist.
   const { error: tagUpsertError } = await supabase.from("hashtags").upsert(
@@ -288,7 +291,7 @@ async function indexHashtagsForPost(args: {
       post_id: args.postId,
       blob_name: args.blobName,
       author: args.author,
-      post_timestamp: args.timestamp,
+      post_timestamp: normalizedTimestamp,
       tag
     })),
     { onConflict: "post_id,tag" }

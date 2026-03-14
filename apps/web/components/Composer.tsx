@@ -389,21 +389,27 @@ export function Composer() {
                   type="button"
                   onClick={async () => {
                     try {
-                      const res = await fetch(createPostMutation.data.shelbyExplorerUrl!);
-                      if (!res.ok) throw new Error("Failed to fetch blob");
-                      const json = await res.json();
-                      const blob = new window.Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+                      const targetUrl = createPostMutation.data.shelbyExplorerUrl!;
+                      const res = await fetch(`/api/blob/download?url=${encodeURIComponent(targetUrl)}`);
+                      if (!res.ok) throw new Error(`Failed to fetch blob (${res.status})`);
+
+                      const contentType = res.headers.get("content-type") ?? "";
+                      const blob = await res.blob();
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement("a");
+                      const fallbackName = `shelby-blob-${Date.now()}`;
+                      const extension = contentType.includes("json") ? "json" : contentType.includes("text") ? "txt" : "bin";
                       a.href = url;
-                      a.download = `shelby-blob-${Date.now()}.json`;
+                      a.download = `${fallbackName}.${extension}`;
                       document.body.appendChild(a);
                       a.click();
                       document.body.removeChild(a);
                       URL.revokeObjectURL(url);
                     } catch (e) {
                       console.error("Failed to download blob:", e);
-                      alert("Failed to download blob. Please try again.");
+                      const directUrl = createPostMutation.data.shelbyExplorerUrl!;
+                      window.open(directUrl, "_blank", "noopener,noreferrer");
+                      alert("Failed to download blob. Opening in a new tab instead.");
                     }
                   }}
                   className="action-icon-btn"

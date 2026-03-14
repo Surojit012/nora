@@ -22,6 +22,9 @@ create index if not exists idx_post_hashtags_tag_time
 create index if not exists idx_post_hashtags_time
   on public.post_hashtags(post_timestamp desc);
 
+create index if not exists idx_post_hashtags_author
+  on public.post_hashtags(author);
+
 alter table public.hashtags enable row level security;
 alter table public.post_hashtags enable row level security;
 
@@ -36,4 +39,3 @@ create policy "read post_hashtags"
 on public.post_hashtags
 for select
 using (true);
-
