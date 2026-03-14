@@ -13,12 +13,7 @@ export function Providers({ children }: { children: ReactNode }) {
       <AptosWalletAdapterProvider
         autoConnect={false}
         dappConfig={{
-          network: Network.TESTNET as never,
-          aptosApiKeys: {
-            testnet:
-              process.env.NEXT_PUBLIC_TESTNET_API_KEY ??
-              process.env.NEXT_PUBLIC_SHELBY_API_KEY
-          }
+          network: Network.TESTNET as never
         }}
       >
         {children}

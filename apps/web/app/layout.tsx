@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body className={`${dmSans.variable} ${dmMono.variable}`}>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script suppressHydrationWarning>{themeInitScript}</script>
         <Providers>
           <AuthGate>{children}</AuthGate>
         </Providers>

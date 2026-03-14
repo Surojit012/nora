@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { toggleLike } from "@/lib/interactions";
 
 export const runtime = "nodejs";
@@ -13,13 +14,20 @@ function toErrorResponse(status: number, error: string, details?: string) {
   );
 }
 
+const LikeSchema = z.object({
+  postId: z.string().trim().min(1, "postId is required"),
+  viewer: z.string().trim().min(1, "Connect wallet first"),
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json().catch(() => null)) as { postId?: unknown; viewer?: unknown } | null;
-    const postId = String(body?.postId ?? "").trim();
-    const viewer = String(body?.viewer ?? "").trim();
-    if (!postId) return toErrorResponse(400, "postId is required.");
-    if (!viewer) return toErrorResponse(400, "Connect wallet first.");
+    const body = await request.json().catch(() => ({}));
+    const parsed = LikeSchema.safeParse(body);
+    if (!parsed.success) {
+      return toErrorResponse(400, "Invalid data.", parsed.error.issues.map(i => i.message).join(", "));
+    }
+
+    const { postId, viewer } = parsed.data;
 
     const result = await toggleLike({ postId, viewer });
     return NextResponse.json(result);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { toggleFollow, isFollowing } from "@/lib/notifications";
 
 export const runtime = "nodejs";
@@ -21,13 +22,20 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const FollowSchema = z.object({
+  follower: z.string().trim().min(1, "Connect wallet first."),
+  following: z.string().trim().min(1, "following is required."),
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json().catch(() => null)) as { follower?: unknown; following?: unknown } | null;
-    const follower = String(body?.follower ?? "").trim();
-    const following = String(body?.following ?? "").trim();
-    if (!follower) return error(400, "Connect wallet first.");
-    if (!following) return error(400, "following is required.");
+    const body = await request.json().catch(() => ({}));
+    const parsed = FollowSchema.safeParse(body);
+    if (!parsed.success) {
+      return error(400, "Invalid data.", parsed.error.issues.map(i => i.message).join(", "));
+    }
+
+    const { follower, following } = parsed.data;
 
     const result = await toggleFollow({ follower, following });
     return NextResponse.json(result, { status: 200 });

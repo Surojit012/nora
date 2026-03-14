@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createComment, listComments } from "@/lib/interactions";
 
 export const runtime = "nodejs";
@@ -28,14 +29,21 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const CommentSchema = z.object({
+  postId: z.string().trim().min(1, "postId is required"),
+  author: z.string().trim().min(1, "Connect wallet first"),
+  content: z.string()
+});
+
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json().catch(() => null)) as { postId?: unknown; author?: unknown; content?: unknown } | null;
-    const postId = String(body?.postId ?? "").trim();
-    const author = String(body?.author ?? "").trim();
-    const content = String(body?.content ?? "");
-    if (!postId) return toErrorResponse(400, "postId is required.");
-    if (!author) return toErrorResponse(400, "Connect wallet first.");
+    const body = await request.json().catch(() => ({}));
+    const parsed = CommentSchema.safeParse(body);
+    if (!parsed.success) {
+      return toErrorResponse(400, "Invalid data.", parsed.error.issues.map(i => i.message).join(", "));
+    }
+
+    const { postId, author, content } = parsed.data;
 
     const comment = await createComment({ postId, author, content });
     return NextResponse.json({ comment }, { status: 201 });
