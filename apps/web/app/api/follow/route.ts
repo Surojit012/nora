@@ -24,36 +24,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return error(401, "Unauthorized: Missing Bearer token.");
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const supabase = getSupabaseAdmin();
-    
-    // Validate session via Supabase JWT
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return error(401, "Unauthorized: Invalid or expired session.");
-    }
-
-    // The wallet_address must be derived solely from the secure backend session
-    const followerAddress = user.user_metadata?.wallet_address || user.email; // Fallback depending on auth setup
-    
-    if (!followerAddress) {
-      return error(401, "Unauthorized: Wallet address not found in session metadata.");
-    }
-
     const body = await request.json().catch(() => ({}));
+    const followerAddress = String(body.follower ?? "").trim();
     const following = String(body.following ?? "").trim();
-    if (!following) return error(400, "Invalid following address.");
+    
+    if (!followerAddress) return error(400, "follower address required.");
+    if (!following) return error(400, "following address required.");
 
     if (followerAddress.toLowerCase() === following.toLowerCase()) {
       return error(400, "You cannot follow yourself.");
     }
 
+    const supabase = getSupabaseAdmin();
     const { data, error: rpcError } = await supabase.rpc("handle_follow", {
       p_follower: followerAddress,
       p_following: following
@@ -75,30 +57,14 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return error(401, "Unauthorized: Missing Bearer token.");
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const supabase = getSupabaseAdmin();
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      return error(401, "Unauthorized: Invalid or expired session.");
-    }
-
-    const followerAddress = user.user_metadata?.wallet_address || user.email;
-    
-    if (!followerAddress) {
-      return error(401, "Unauthorized: Wallet address not found in session metadata.");
-    }
-
     const body = await request.json().catch(() => ({}));
+    const followerAddress = String(body.follower ?? "").trim();
     const following = String(body.following ?? "").trim();
-    if (!following) return error(400, "Invalid following address.");
 
+    if (!followerAddress) return error(400, "follower address required.");
+    if (!following) return error(400, "following address required.");
+
+    const supabase = getSupabaseAdmin();
     const { data, error: rpcError } = await supabase.rpc("handle_unfollow", {
       p_follower: followerAddress,
       p_following: following

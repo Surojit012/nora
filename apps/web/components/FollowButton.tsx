@@ -3,7 +3,7 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+
 
 type FollowButtonProps = {
   targetAddress: string;
@@ -43,23 +43,15 @@ export function FollowButton({ targetAddress, onFollowSuccess, className, disabl
       const method = isCurrentlyFollowing ? "DELETE" : "POST";
       const message = `${isCurrentlyFollowing ? "Unfollow" : "Follow"} ${targetAddress}`;
 
-      // Try to get Supabase session token
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      
-      if (!token) {
-        throw new Error("Unauthorized: Please sign in with Supabase to follow users.");
-      }
-
-      const headers = new Headers({
-        "content-type": "application/json",
-        "authorization": `Bearer ${token}`
-      });
-
       const res = await fetch("/api/follow", {
         method,
-        headers,
-        body: JSON.stringify({ following: targetAddress }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          follower: viewer,
+          following: targetAddress 
+        }),
       });
       if (!res.ok) {
         const payload = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
