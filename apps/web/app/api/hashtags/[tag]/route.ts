@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabase } from "@/lib/supabaseClient";
 import { ShelbyNodeClient } from "@shelby-protocol/sdk/node";
 import { Account, Ed25519PrivateKey, Network } from "@aptos-labs/ts-sdk";
 import { Post } from "@/lib/types";
@@ -95,7 +95,6 @@ export async function GET(request: Request, context: RouteContext) {
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(50, Number(url.searchParams.get("limit") ?? 20)));
 
-    const supabase = getSupabaseAdmin();
     const { data, error: dbError } = await supabase
       .from("post_hashtags")
       .select("blob_name, post_timestamp")

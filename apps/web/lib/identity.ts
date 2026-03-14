@@ -48,6 +48,20 @@ function toPublicUser(user: UserRow): PublicUser {
   };
 }
 
+async function getFollowersCountByWalletAddress(walletAddress: string): Promise<number> {
+  const addr = normalizeWalletAddress(walletAddress);
+  if (!addr) return 0;
+
+  const supabase = getSupabaseAdmin();
+  const { count, error } = await supabase
+    .from("follows")
+    .select("follower_address", { count: "exact", head: true })
+    .eq("following_address", addr);
+
+  if (error) throw mapSupabaseError({ message: error.message });
+  return typeof count === "number" ? count : 0;
+}
+
 function mapSupabaseError(error: { code?: string; message: string }): Error {
   if (error.code === "23505") {
     if (error.message.includes("users_username_key")) {
@@ -126,7 +140,11 @@ export async function getUserByUsername(usernameInput: string): Promise<PublicUs
     .maybeSingle();
 
   if (error) throw mapSupabaseError(error);
-  return data ? toPublicUser(data as UserRow) : null;
+  if (!data) return null;
+
+  const base = toPublicUser(data as UserRow);
+  const followers = await getFollowersCountByWalletAddress(base.wallet_address ?? "");
+  return { ...base, followers };
 }
 
 export async function getUserByWalletAddress(walletAddressInput: string): Promise<PublicUser | null> {
@@ -141,7 +159,11 @@ export async function getUserByWalletAddress(walletAddressInput: string): Promis
     .maybeSingle();
 
   if (error) throw mapSupabaseError(error);
-  return data ? toPublicUser(data as UserRow) : null;
+  if (!data) return null;
+
+  const base = toPublicUser(data as UserRow);
+  const followers = await getFollowersCountByWalletAddress(base.wallet_address ?? "");
+  return { ...base, followers };
 }
 
 export async function updateUserByWalletAddress(

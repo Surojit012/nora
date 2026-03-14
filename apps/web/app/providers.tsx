@@ -11,7 +11,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AptosWalletAdapterProvider
-        autoConnect={false}
+        autoConnect
         dappConfig={{
           network: Network.TESTNET as never
         }}

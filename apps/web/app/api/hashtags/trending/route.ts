@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { supabase } from "@/lib/supabaseClient";
 
 type TrendingItem = { tag: string; count: number };
 
@@ -8,7 +8,6 @@ function error(status: number, message: string) {
 }
 
 async function getTrendingSince(sinceMs: number, limit: number): Promise<TrendingItem[]> {
-  const supabase = getSupabaseAdmin();
   const { data, error: dbError } = await supabase
     .from("post_hashtags")
     .select("tag, post_timestamp")
@@ -40,4 +39,3 @@ export async function GET(request: Request) {
     return error(500, e instanceof Error ? e.message : "Failed to fetch trending hashtags.");
   }
 }
-
