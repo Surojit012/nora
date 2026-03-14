@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import { PostCard } from "@/components/PostCard";
 import { ExploreMediaGrid } from "@/components/ExploreMediaGrid";
 import { SkeletonTweetList, SkeletonWidget } from "@/components/Skeletons";
@@ -119,9 +118,6 @@ export function ExploreFeed() {
             <button type="button" className={layout === "media" ? "btn-primary" : "btn-ghost"} onClick={() => setLayout("media")}>
               Media
             </button>
-            <Link href="/tag/shelby" className="btn-ghost">
-              Tags
-            </Link>
           </div>
         </div>
       </div>
