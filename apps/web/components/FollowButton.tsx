@@ -12,7 +12,7 @@ type FollowButtonProps = {
 };
 
 export function FollowButton({ targetAddress, onFollowSuccess, className, disabled }: FollowButtonProps) {
-  const { account } = useWallet();
+  const { account, signMessage } = useWallet();
   const viewer = account?.address?.toString() ?? "";
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +36,34 @@ export function FollowButton({ targetAddress, onFollowSuccess, className, disabl
 
   const toggleFollowMutation = useMutation({
     mutationFn: async () => {
-      if (!viewer || !targetAddress) throw new Error("Connect wallet first.");
+      if (!viewer || !targetAddress || !account?.publicKey) throw new Error("Connect wallet first.");
+      
+      const isCurrentlyFollowing = followStateQuery.data?.following;
+      const method = isCurrentlyFollowing ? "DELETE" : "POST";
+      const message = `${isCurrentlyFollowing ? "Unfollow" : "Follow"} ${targetAddress}`;
+
+      // Retrieve signature for backend verification
+      const prompt = await signMessage({
+        message,
+        nonce: Date.now().toString(),
+      });
+
+      if (!prompt || !prompt.signature) {
+        throw new Error("Signature rejected");
+      }
+
+      // Format headers suitable for Ed25519 processing
+      const headers = new Headers({
+        "content-type": "application/json",
+        "x-aptos-pubkey": account.publicKey.toString(),
+        "x-aptos-signature": typeof prompt.signature === "string" ? prompt.signature : Buffer.from(prompt.signature as any).toString("hex"),
+        "x-aptos-message": prompt.fullMessage,
+      });
+
       const res = await fetch("/api/follow", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ follower: viewer, following: targetAddress }),
+        method,
+        headers,
+        body: JSON.stringify({ following: targetAddress }),
       });
       if (!res.ok) {
         const payload = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
