@@ -7,11 +7,10 @@ function error(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
 }
 
-async function getTrendingSince(sinceMs: number, limit: number): Promise<TrendingItem[]> {
+async function getTrendingAllTime(limit: number): Promise<TrendingItem[]> {
   const { data, error: dbError } = await supabase
     .from("post_hashtags")
-    .select("tag, post_timestamp")
-    .gte("post_timestamp", sinceMs);
+    .select("tag");
 
   if (dbError) throw new Error(dbError.message);
   const counts = new Map<string, number>();
@@ -19,10 +18,12 @@ async function getTrendingSince(sinceMs: number, limit: number): Promise<Trendin
     counts.set(row.tag, (counts.get(row.tag) ?? 0) + 1);
   }
 
-  return [...counts.entries()]
+  const sorted = [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([tag, count]) => ({ tag, count }));
+
+  return sorted;
 }
 
 export async function GET(request: Request) {
@@ -30,11 +31,9 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(20, Number(url.searchParams.get("limit") ?? 8)));
 
-    const now = Date.now();
-    const last24h = await getTrendingSince(now - 24 * 60 * 60 * 1000, limit);
-    const last7d = await getTrendingSince(now - 7 * 24 * 60 * 60 * 1000, limit);
+    const allTime = await getTrendingAllTime(limit);
 
-    return NextResponse.json({ last24h, last7d });
+    return NextResponse.json({ last24h: allTime, last7d: allTime });
   } catch (e) {
     return error(500, e instanceof Error ? e.message : "Failed to fetch trending hashtags.");
   }
