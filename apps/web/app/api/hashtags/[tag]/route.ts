@@ -68,28 +68,39 @@ function getShelbyClient(): ShelbyNodeClient {
   );
 }
 
-async function downloadPost(client: ShelbyNodeClient, account: string, blobName: string): Promise<Post | null> {
+async function downloadPost(
+  client: ShelbyNodeClient,
+  accounts: string[],
+  blobName: string
+): Promise<Post | null> {
   try {
-    const blob = await client.download({ account, blobName });
-    const raw = await new Response(blob.readable).text();
-    const parsed = JSON.parse(raw) as { type?: string; author?: string; content?: string; timestamp?: number };
-    if (parsed.type !== "post") return null;
-    if (!parsed.author || !parsed.content || typeof parsed.timestamp !== "number") return null;
-    return {
-      id: `${account}/${blobName}`,
-      author: String(parsed.author),
-      text: String(parsed.content),
-      createdAt: new Date(parsed.timestamp).toISOString()
-    };
+    for (const account of accounts) {
+      try {
+        const blob = await client.download({ account, blobName });
+        const raw = await new Response(blob.readable).text();
+        const parsed = JSON.parse(raw) as { type?: string; author?: string; content?: string; timestamp?: number };
+        if (parsed.type !== "post") return null;
+        if (!parsed.author || !parsed.content || typeof parsed.timestamp !== "number") return null;
+        return {
+          id: `${account}/${blobName}`,
+          author: String(parsed.author),
+          text: String(parsed.content),
+          createdAt: new Date(parsed.timestamp).toISOString()
+        };
+      } catch {
+        // Try the next account.
+      }
+    }
+    return null;
   } catch {
-    console.warn("[GET /api/hashtags/:tag] Failed to download post blob:", { account, blobName });
+    console.warn("[GET /api/hashtags/:tag] Failed to download post blob:", { accounts, blobName });
     return null;
   }
 }
 
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const tag = String(context.params.tag ?? "").trim().toLowerCase();
+    const tag = String(context.params.tag ?? "").trim().toLowerCase().replace(/^#/, "");
     if (!tag) return error(400, "Tag is required.");
 
     const url = new URL(request.url);
@@ -97,7 +108,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     const { data, error: dbError } = await supabase
       .from("post_hashtags")
-      .select("blob_name, post_timestamp")
+      .select("blob_name, post_timestamp, author")
       .eq("tag", tag)
       .order("post_timestamp", { ascending: false })
       .limit(limit);
@@ -107,9 +118,17 @@ export async function GET(request: Request, context: RouteContext) {
     const signer = getSigner();
     const client = getShelbyClient();
     const account = signer.accountAddress.toString();
-    const blobNames = (data ?? []) as { blob_name: string }[];
+    const blobNames = (data ?? []) as { blob_name: string; author?: string }[];
 
-    const posts = await Promise.all(blobNames.map((row) => downloadPost(client, account, row.blob_name)));
+    const posts = await Promise.all(
+      blobNames.map((row) =>
+        downloadPost(
+          client,
+          [account, row.author ?? ""].filter(Boolean),
+          row.blob_name
+        )
+      )
+    );
     return NextResponse.json(posts.filter((p): p is Post => p !== null));
   } catch (e) {
     return error(500, e instanceof Error ? e.message : "Failed to fetch hashtag feed.");
