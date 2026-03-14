@@ -23,8 +23,8 @@ create index if not exists idx_follows_following on public.follows (following_ad
 alter table public.follows enable row level security;
 create policy "read follows" on public.follows for select using (true);
 
--- 3. FOLLOW USER RPC
-create or replace function public.follow_user(
+-- 3. HANDLE FOLLOW RPC
+create or replace function public.handle_follow(
   p_follower text, 
   p_following text,
   out followers_count int,
@@ -45,28 +45,28 @@ begin
     update public.users 
     set following_count = public.users.following_count + 1 
     where wallet_address = p_follower
-    returning public.users.following_count into follow_user.following_count;
+    returning public.users.following_count into handle_follow.following_count;
 
     update public.users 
     set followers_count = public.users.followers_count + 1 
     where wallet_address = p_following
-    returning public.users.followers_count into follow_user.followers_count;
+    returning public.users.followers_count into handle_follow.followers_count;
 
     -- Insert notification
     insert into public.notification_events (type, actor_address, recipient_address)
     values ('follow', p_follower, p_following);
   else
     -- Already following, just read counts
-    select public.users.followers_count into follow_user.followers_count from public.users where wallet_address = p_following;
-    select public.users.following_count into follow_user.following_count from public.users where wallet_address = p_follower;
+    select public.users.followers_count into handle_follow.followers_count from public.users where wallet_address = p_following;
+    select public.users.following_count into handle_follow.following_count from public.users where wallet_address = p_follower;
   end if;
 
   following := true;
 end;
 $$;
 
--- 4. UNFOLLOW USER RPC
-create or replace function public.unfollow_user(
+-- 4. HANDLE UNFOLLOW RPC
+create or replace function public.handle_unfollow(
   p_follower text, 
   p_following text,
   out followers_count int,
@@ -85,16 +85,16 @@ begin
     update public.users 
     set following_count = greatest(0, public.users.following_count - 1) 
     where wallet_address = p_follower
-    returning public.users.following_count into unfollow_user.following_count;
+    returning public.users.following_count into handle_unfollow.following_count;
 
     update public.users 
     set followers_count = greatest(0, public.users.followers_count - 1) 
     where wallet_address = p_following
-    returning public.users.followers_count into unfollow_user.followers_count;
+    returning public.users.followers_count into handle_unfollow.followers_count;
   else
     -- Not following, just read counts
-    select public.users.followers_count into unfollow_user.followers_count from public.users where wallet_address = p_following;
-    select public.users.following_count into unfollow_user.following_count from public.users where wallet_address = p_follower;
+    select public.users.followers_count into handle_unfollow.followers_count from public.users where wallet_address = p_following;
+    select public.users.following_count into handle_unfollow.following_count from public.users where wallet_address = p_follower;
   end if;
 
   following := false;

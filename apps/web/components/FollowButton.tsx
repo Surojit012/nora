@@ -3,6 +3,7 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 type FollowButtonProps = {
   targetAddress: string;
@@ -42,36 +43,17 @@ export function FollowButton({ targetAddress, onFollowSuccess, className, disabl
       const method = isCurrentlyFollowing ? "DELETE" : "POST";
       const message = `${isCurrentlyFollowing ? "Unfollow" : "Follow"} ${targetAddress}`;
 
-      // Retrieve signature for backend verification
-      const prompt = await signMessage({
-        message: JSON.stringify(message),
-        nonce: Date.now().toString(),
-      });
-
-      if (!prompt || !prompt.signature) {
-        throw new Error("Signature rejected");
+      // Try to get Supabase session token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      
+      if (!token) {
+        throw new Error("Unauthorized: Please sign in with Supabase to follow users.");
       }
 
-      let sigHex = "";
-      if (typeof prompt.signature === "string") {
-        sigHex = prompt.signature;
-      } else if (prompt.signature && typeof (prompt.signature as any).toUint8Array === "function") {
-        sigHex = Buffer.from((prompt.signature as any).toUint8Array()).toString("hex");
-      } else if (prompt.signature && (prompt.signature as any).data) { // Handle generic objects
-        sigHex = Buffer.from((prompt.signature as any).data).toString("hex");
-      } else if (prompt.signature instanceof Uint8Array || Array.isArray(prompt.signature)) {
-        sigHex = Buffer.from(prompt.signature).toString("hex");
-      } else {
-        // Fallback for weird wallet plugins
-        sigHex = String(prompt.signature);
-      }
-
-      // Format headers suitable for Ed25519 processing
       const headers = new Headers({
         "content-type": "application/json",
-        "x-aptos-pubkey": account.publicKey.toString(),
-        "x-aptos-signature": sigHex,
-        "x-aptos-message": prompt.fullMessage,
+        "authorization": `Bearer ${token}`
       });
 
       const res = await fetch("/api/follow", {
