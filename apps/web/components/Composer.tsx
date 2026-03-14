@@ -384,12 +384,12 @@ export function Composer() {
               Post successfully published!
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              {createPostMutation.data.blobId ? (
+              {createPostMutation.data.shelbyExplorerUrl ? (
                 <a
-                  href={`https://api.shelbynet.shelby/blob/${createPostMutation.data.blobId}?download=true`}
+                  href={`${createPostMutation.data.shelbyExplorerUrl}?download=true`}
                   target="_blank"
                   rel="noreferrer"
-                  download={`shelby-blob-${createPostMutation.data.blobId}.json`}
+                  download="shelby-blob.json"
                   className="action-icon-btn"
                   style={{
                     padding: "6px 12px",
