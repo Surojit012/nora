@@ -13,7 +13,7 @@ type FollowButtonProps = {
 };
 
 export function FollowButton({ targetAddress, onFollowSuccess, className, disabled }: FollowButtonProps) {
-  const { account, signMessage } = useWallet();
+  const { account } = useWallet();
   const viewer = account?.address?.toString() ?? "";
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
@@ -37,11 +37,10 @@ export function FollowButton({ targetAddress, onFollowSuccess, className, disabl
 
   const toggleFollowMutation = useMutation({
     mutationFn: async () => {
-      if (!viewer || !targetAddress || !account?.publicKey) throw new Error("Connect wallet first.");
+      if (!viewer || !targetAddress) throw new Error("Connect wallet first.");
       
       const isCurrentlyFollowing = followStateQuery.data?.following;
       const method = isCurrentlyFollowing ? "DELETE" : "POST";
-      const message = `${isCurrentlyFollowing ? "Unfollow" : "Follow"} ${targetAddress}`;
 
       const res = await fetch("/api/follow", {
         method,
