@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./node_modules/@shelby-protocol/clay-codes/dist/**/*.wasm'],
+    },
+  },
   async headers() {
     return [
       {

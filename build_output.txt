@@ -1,0 +1,341 @@
+
+> nora-monorepo@0.1.0 build
+> turbo run build --filter=@nora/web
+
+• turbo 2.8.16
+• Packages in scope: @nora/web
+• Running build in 1 packages
+• Remote caching disabled
+@nora/web:build: cache miss, executing 2d33d9895bbbf21c
+@nora/web:build: 
+@nora/web:build: > @nora/web@0.1.0 build
+@nora/web:build: > next build
+@nora/web:build: 
+@nora/web:build:   ▲ Next.js 14.2.35
+@nora/web:build:   - Environments: .env.local, .env
+@nora/web:build: 
+@nora/web:build:    Creating an optimized production build ...
+@nora/web:build:  ⚠ Compiled with warnings
+@nora/web:build: 
+@nora/web:build: ../../node_modules/keyv/src/index.js
+@nora/web:build: Critical dependency: the request of a dependency is an expression
+@nora/web:build: 
+@nora/web:build: Import trace for requested module:
+@nora/web:build: ../../node_modules/keyv/src/index.js
+@nora/web:build: ../../node_modules/cacheable-request/src/index.js
+@nora/web:build: ../../node_modules/got/dist/source/core/index.js
+@nora/web:build: ../../node_modules/got/dist/source/create.js
+@nora/web:build: ../../node_modules/got/dist/source/index.js
+@nora/web:build: ../../node_modules/@aptos-labs/aptos-client/dist/node/index.node.mjs
+@nora/web:build: ../../node_modules/@aptos-labs/ts-sdk/dist/esm/chunk-V5NDNR36.mjs
+@nora/web:build: ../../node_modules/@aptos-labs/ts-sdk/dist/esm/index.mjs
+@nora/web:build: ../../node_modules/@shelby-protocol/sdk/dist/chunk-TXPDEVJ3.mjs
+@nora/web:build: ../../node_modules/@shelby-protocol/sdk/dist/node/index.mjs
+@nora/web:build: ./app/api/hashtags/[tag]/route.ts
+@nora/web:build: 
+@nora/web:build:  ✓ Compiled successfully
+@nora/web:build:    Linting and checking validity of types ...
+@nora/web:build:    Collecting page data ...
+@nora/web:build:    Generating static pages (0/37) ...
+@nora/web:build:    Generating static pages (9/37) 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/onboarding". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/explore". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/profile". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:    Generating static pages (18/37) 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/new". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/notifications". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build:    Generating static pages (27/37) 
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/bookmarks". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/messages". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539) {
+@nora/web:build:   digest: '3235336421'
+@nora/web:build: }
+@nora/web:build: 
+@nora/web:build: Error occurred prerendering page "/settings". Read more: https://nextjs.org/docs/messages/prerender-error
+@nora/web:build: 
+@nora/web:build: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61600)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:61547)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nD (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:66681)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64854)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:     at nM (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:58561)
+@nora/web:build:     at nL (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:64547)
+@nora/web:build:     at nB (/Users/surojitpvt/Desktop/nora/node_modules/next/dist/compiled/next-server/app-page.runtime.prod.js:12:67539)
+@nora/web:build:  ✓ Generating static pages (37/37)
+@nora/web:build: 
+@nora/web:build: > Export encountered errors on following paths:
+@nora/web:build: 	/_not-found/page: /_not-found
+@nora/web:build: 	/bookmarks/page: /bookmarks
+@nora/web:build: 	/explore/page: /explore
+@nora/web:build: 	/messages/page: /messages
+@nora/web:build: 	/new/page: /new
+@nora/web:build: 	/notifications/page: /notifications
+@nora/web:build: 	/onboarding/page: /onboarding
+@nora/web:build: 	/page: /
+@nora/web:build: 	/profile/page: /profile
+@nora/web:build: 	/settings/page: /settings
+@nora/web:build: npm error Lifecycle script `build` failed with error:
+@nora/web:build: npm error code 1
+@nora/web:build: npm error path /Users/surojitpvt/Desktop/nora/apps/web
+@nora/web:build: npm error workspace @nora/web@0.1.0
+@nora/web:build: npm error location /Users/surojitpvt/Desktop/nora/apps/web
+@nora/web:build: npm error command failed
+@nora/web:build: npm error command sh -c next build
+@nora/web:build: ERROR: command finished with error: command (/Users/surojitpvt/Desktop/nora/apps/web) /usr/local/bin/npm run build exited (1)
+@nora/web#build: command (/Users/surojitpvt/Desktop/nora/apps/web) /usr/local/bin/npm run build exited (1)
+
+ Tasks:    0 successful, 1 total
+Cached:    0 cached, 1 total
+  Time:    9.159s 
+Failed:    @nora/web#build
+
+ ERROR  run failed: command  exited (1)
