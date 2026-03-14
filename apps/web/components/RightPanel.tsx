@@ -93,23 +93,25 @@ export function RightPanel() {
         ) : (
           creators.map((c, idx) => (
             <div key={c.walletAddress} className="who-item">
-              {c.avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={c.avatar}
-                  alt={c.username}
-                  className="avatar"
-                  style={{ width: 38, height: 38, objectFit: "cover" }}
-                />
-              ) : (
-                <div className={`avatar ${avatarForIndex(idx)}`} style={{ width: 38, height: 38 }}>
-                  {c.username.slice(0, 2).toUpperCase()}
+              <Link href={`/profile/${encodeURIComponent(c.username)}`} className="who-link" aria-label={`View ${c.username} profile`}>
+                {c.avatar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={c.avatar}
+                    alt={c.username}
+                    className="avatar"
+                    style={{ width: 38, height: 38, objectFit: "cover" }}
+                  />
+                ) : (
+                  <div className={`avatar ${avatarForIndex(idx)}`} style={{ width: 38, height: 38 }}>
+                    {c.username.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div className="who-info">
+                  <div className="who-name">@{c.username}</div>
+                  <div className="who-handle">{formatCount(c.followersCount)} followers</div>
                 </div>
-              )}
-              <div className="who-info">
-                <div className="who-name">@{c.username}</div>
-                <div className="who-handle">{formatCount(c.followersCount)} followers</div>
-              </div>
+              </Link>
               <FollowButton targetAddress={c.walletAddress} className="follow-btn" />
             </div>
           ))

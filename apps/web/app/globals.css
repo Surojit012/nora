@@ -695,12 +695,26 @@ textarea {
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  cursor: pointer;
   transition: background 100ms;
   border-top: 1px solid var(--border);
 }
 .who-item:hover {
   background: var(--card);
+}
+.who-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.who-link:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 10px;
 }
 .who-info {
   flex: 1;
