@@ -171,3 +171,14 @@ Verify key scope for the configured endpoint and set service-specific keys if ne
 ## Architecture Reference
 
 See [ARCHITECTURE.md](/Users/surojitpvt/Desktop/nora/ARCHITECTURE.md) for a full system overview and data flow.
+
+## Open Source & Contributing
+
+Nora is fully open-sourced under the MIT License! We encourage you to fork the repository, deploy your own instance of Nora, or contribute back to the project.
+
+**Security Notice:** When deploying your own fork of Nora, please ensure that you securely populate your own `.env.local` based on `.env.example`. Never commit real API keys or wallets to version control! 
+
+Feel free to open Issues for bugs and feature requests, or submit Pull Requests for improvements.
+
+## License
+MIT License. See [LICENSE](LICENSE) for more details.
