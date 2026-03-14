@@ -1,5 +1,5 @@
 {
   "buildCommand": "turbo run build --filter=@nora/web",
   "installCommand": "npm install",
-  "outputDirectory": "apps/web/.next"
+  "outputDirectory": ".next"
 }
