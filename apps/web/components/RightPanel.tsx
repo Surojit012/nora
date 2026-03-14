@@ -135,12 +135,12 @@ export function RightPanel() {
       </div>
 
       <div className="footer-links">
-        <span>Terms</span>
-        <span>Privacy</span>
-        <span>Cookies</span>
-        <span>Accessibility</span>
-        <span>Ads info</span>
-        <span>More</span>
+        <Link href="/settings#terms">Terms</Link>
+        <Link href="/settings#privacy">Privacy</Link>
+        <Link href="/settings#cookies">Cookies</Link>
+        <Link href="/settings#accessibility">Accessibility</Link>
+        <Link href="/settings#ads">Ads info</Link>
+        <Link href="/settings#more">More</Link>
         <span style={{ color: "var(--subtle)", marginTop: 4, width: "100%" }}>© 2026 nora</span>
       </div>
     </>
