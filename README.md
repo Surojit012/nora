@@ -40,7 +40,7 @@ This project is configured for deployment on **Vercel**.
 - Feed rendering with timestamp and social-style cards
 - Shelby-backed storage for post blobs
 - Tx hash + explorer links immediately after publish
-- Supabase-backed user profiles
+- Supabase-backed user profiles (identity + social graph only)
 
 ## Quick Start
 
@@ -124,11 +124,7 @@ npm run typecheck
 
 - Each post is uploaded as a Shelby blob under:
   - `nora/posts/<timestamp>-<uuid>.json`
-- Feed index is maintained server-side in:
-  - `.nora-post-index.json`
-- Feed reads index entries, then downloads corresponding Shelby blobs.
-
-This avoids the testnet `blobs` GraphQL schema dependency that caused earlier query failures.
+- Feed is derived directly from Shelby blobs (no database index).
 
 ## Identity Storage
 
@@ -158,7 +154,7 @@ Restart dev server after env changes and retry.
 
 ### `field 'blobs' not found in type: 'query_root'`
 
-You are pointing at a non-Shelby blob indexer schema. Current app avoids this for posting/feed by using server API + local index file.
+You are pointing at a non-Shelby blob indexer schema. Current app avoids this for posting/feed by downloading Shelby blobs directly.
 
 ### `Unauthorized` errors
 

@@ -74,7 +74,7 @@ export function RightPanel() {
         ) : (
           tags.slice(0, 6).map((item) => (
             <Link key={item.tag} href={`/tag/${encodeURIComponent(item.tag)}`} className="trend-item">
-              <div className="trend-cat">Technology · Trending</div>
+              <div className="trend-cat">Trending</div>
               <div className="trend-name">#{item.tag}</div>
               <div className="trend-count">{formatCount(item.count)} posts</div>
             </Link>

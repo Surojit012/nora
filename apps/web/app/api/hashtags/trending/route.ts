@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
+import { listShelbyPosts } from "@/lib/shelbyServer";
+import { extractHashtags } from "@/lib/hashtags";
 
 type TrendingItem = { tag: string; count: number };
 
@@ -8,22 +9,22 @@ function error(status: number, message: string) {
 }
 
 async function getTrendingAllTime(limit: number): Promise<TrendingItem[]> {
-  const { data, error: dbError } = await supabase
-    .from("post_hashtags")
-    .select("tag");
-
-  if (dbError) throw new Error(dbError.message);
+  const scan = Math.max(200, limit * 20);
+  const posts = await listShelbyPosts({ limit: scan });
   const counts = new Map<string, number>();
-  for (const row of (data ?? []) as { tag: string }[]) {
-    counts.set(row.tag, (counts.get(row.tag) ?? 0) + 1);
+  for (const post of posts) {
+    const tags = extractHashtags(post.text ?? "")
+      .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
+      .filter(Boolean);
+    for (const tag of tags) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
   }
 
-  const sorted = [...counts.entries()]
+  return [...counts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([tag, count]) => ({ tag, count }));
-
-  return sorted;
 }
 
 export async function GET(request: Request) {

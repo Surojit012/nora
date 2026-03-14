@@ -3,6 +3,8 @@ import "server-only";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { extractMentions } from "@/lib/mentions";
 import type { PublicUser } from "@/lib/identity";
+import { ShelbyNodeClient } from "@shelby-protocol/sdk/node";
+import { Network } from "@aptos-labs/ts-sdk";
 
 export type NotificationType = "like" | "follow" | "mention";
 
@@ -36,15 +38,30 @@ async function getPostAuthorAddressFromIndex(postId: string): Promise<string> {
   const parsed = parsePostId(postId);
   if (!parsed) return "";
 
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("post_blobs")
-    .select("author_address")
-    .eq("blob_name", parsed.blobName)
-    .maybeSingle();
+  const apiKey = (process.env.SHELBY_API_KEY ?? "").trim();
+  if (!apiKey) return "";
 
-  if (error) throw new Error(`post_blobs read failed: ${error.message}`);
-  return String((data as { author_address?: string } | null)?.author_address ?? "").trim().toLowerCase();
+  const network = (() => {
+    const v = (process.env.SHELBY_NETWORK ?? "").trim().toLowerCase();
+    if (v === "shelbynet") return Network.SHELBYNET;
+    if (v === "local") return Network.LOCAL;
+    return Network.TESTNET;
+  })();
+
+  const client = new ShelbyNodeClient({
+    network,
+    apiKey,
+    ...(process.env.SHELBY_RPC_BASE_URL ? { rpc: { baseUrl: process.env.SHELBY_RPC_BASE_URL } } : {})
+  });
+
+  try {
+    const blob = await client.download({ account: parsed.owner, blobName: parsed.blobName });
+    const raw = await new Response(blob.readable).text();
+    const parsedBlob = JSON.parse(raw) as { author?: string };
+    return String(parsedBlob.author ?? "").trim().toLowerCase();
+  } catch {
+    return "";
+  }
 }
 
 async function findUsersByWalletAddresses(addresses: string[]) {
@@ -256,4 +273,3 @@ async function updateFollowersCount(walletAddress: string, followersCount: numbe
     console.warn("[followers_count] update failed:", error.message);
   }
 }
-

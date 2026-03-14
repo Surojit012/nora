@@ -7,7 +7,7 @@ Nora is a Next.js monorepo app where:
 - UI runs in `apps/web`
 - post create/read requests go through Next.js API routes
 - post payloads are stored as Shelby blobs
-- feed ordering metadata is stored in a local server index file
+- feed reads are derived directly from Shelby blobs
 - profile/identity data is stored in Supabase (`public.users`)
 
 ## High-Level Components
@@ -38,16 +38,14 @@ Nora is a Next.js monorepo app where:
 3. Server validates payload and builds post JSON blob.
 4. Server creates commitments and registers blob on coordination layer.
 5. Server uploads blob bytes to Shelby RPC.
-6. Server updates local index file `.nora-post-index.json`.
-7. API returns normalized post object with tx metadata.
-8. Client shows success, tx hash, and explorer/blob links.
+6. API returns normalized post object with tx metadata.
+7. Client shows success, tx hash, and explorer/blob links.
 
 ### Fetch Feed
 
 1. Client calls `GET /api/posts`.
-2. Server reads `.nora-post-index.json`.
-3. For each index entry, server downloads corresponding Shelby blob.
-4. Server parses JSON blobs and returns sorted posts.
+2. Server downloads Shelby blobs directly.
+3. Server parses JSON blobs and returns sorted posts.
 5. UI renders feed cards.
 
 ## Flow Diagram
@@ -63,11 +61,8 @@ flowchart TD
   C2 --> TX[(Aptos Tx Hash)]
   C2 --> C3[putBlob to Shelby RPC]
   C3 --> B[(Shelby Blob Storage)]
-  C3 --> IDX[(Local index file: .nora-post-index.json)]
-
   UI --> API2[GET /api/posts]
-  API2 --> SVC2[Server: read index]
-  SVC2 --> IDX
+  API2 --> SVC2[Server: read Shelby blobs]
   SVC2 --> B
   B --> SVC2
   SVC2 --> UI
@@ -87,16 +82,6 @@ flowchart TD
   - `content`
   - `timestamp`
 
-### Local index
-
-- File: `.nora-post-index.json`
-- Contains:
-  - `blobName`
-  - `timestamp`
-  - `txHash`
-  - `txExplorerUrl`
-  - `shelbyExplorerUrl`
-
 ### Supabase users
 
 - Table: `public.users`
@@ -109,10 +94,9 @@ flowchart TD
   - `followers_count`
   - `created_at`
 
-## Why local index exists
+## Why no database index exists
 
-Testnet endpoint behavior can break SDK paths that rely on a `blobs` GraphQL schema.
-Using a local index allows stable post/feed behavior while still keeping actual post content in Shelby blobs.
+Post content and discovery are handled by Shelby directly to keep the system decentralized and avoid storing post data in a database.
 
 ## Environment Configuration
 
@@ -143,13 +127,10 @@ Client-side optional:
 
 ## Operational Notes
 
-- `.nora-post-index.json` is local to the running server instance.
-- In multi-instance deployments, this file should be replaced by shared storage.
-- Post blobs remain portable because they are stored in Shelby.
+- Post content is stored only on Shelby.
+- Supabase is used only for identity and social graph (follows, notifications, interactions).
 
 ## Future Improvements
 
-- Move index to shared durable storage (DB or object store).
-- Add background reconciliation job to rebuild index from chain/RPC metadata.
 - Add pagination and cursor-based feed reads.
 - Add per-author profile feeds and richer post metadata.

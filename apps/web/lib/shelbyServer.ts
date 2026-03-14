@@ -9,7 +9,6 @@ import path from "node:path";
 import { Post } from "@/lib/types";
 import { extractHashtags } from "@/lib/hashtags";
 import { emitMentionsFromText } from "@/lib/notifications";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 const POST_PREFIX = "nora/posts/";
 const MAX_POST_LENGTH = 280;
@@ -261,45 +260,12 @@ function toPost(ownerAddress: string, id: string, payload: ShelbyPostBlob): Post
   };
 }
 
-async function indexHashtagsForPost(args: {
-  postId: string;
-  blobName: string;
-  author: string;
-  timestamp: number;
-  content: string;
-}) {
+async function indexHashtagsForPost(args: { content: string }) {
   const tags = extractHashtags(args.content)
     .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
     .filter(Boolean);
   if (tags.length === 0) return;
-
-  const supabase = getSupabaseAdmin();
-  const normalizedTimestamp = args.timestamp > 1_000_000_000_000 ? args.timestamp : args.timestamp * 1000;
-
-  // Ensure tag rows exist.
-  const { error: tagUpsertError } = await supabase.from("hashtags").upsert(
-    tags.map((tag) => ({ tag })),
-    { onConflict: "tag" }
-  );
-  if (tagUpsertError) {
-    console.warn("[hashtags] failed to upsert hashtags:", tagUpsertError);
-    return;
-  }
-
-  const { error: mappingError } = await supabase.from("post_hashtags").upsert(
-    tags.map((tag) => ({
-      post_id: args.postId,
-      blob_name: args.blobName,
-      author: args.author,
-      post_timestamp: normalizedTimestamp,
-      tag
-    })),
-    { onConflict: "post_id,tag" }
-  );
-
-  if (mappingError) {
-    console.warn("[hashtags] failed to upsert post hashtags:", mappingError);
-  }
+  // No-op: hashtags are stored on Shelby only (no DB writes).
 }
 
 function createEmptyPostIndex(): PostIndex {
@@ -397,38 +363,13 @@ function normalizeAddress(value: string): string {
 }
 
 async function upsertPostIndexRow(row: Omit<PostBlobRow, "created_at">) {
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase
-    .from("post_blobs")
-    .upsert(row, { onConflict: "blob_name" });
-  if (error) {
-    throw new Error(`Supabase post index upsert failed: ${error.message}`);
-  }
+  void row;
+  // No-op: we no longer persist post indexes in Supabase.
 }
 
 async function getTxMappingsForBlobs(blobNames: string[]): Promise<Map<string, PostBlobRow>> {
-  const out = new Map<string, PostBlobRow>();
-  const deduped = Array.from(new Set(blobNames)).slice(0, 500);
-  if (deduped.length === 0) return out;
-
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("post_blobs")
-    .select(
-      "blob_name,owner_address,author_address,post_timestamp,tx_hash,tx_explorer_url,shelby_tx_explorer_url,shelby_blob_url,created_at"
-    )
-    .in("blob_name", deduped);
-
-  if (error) {
-    // Don’t fail feed rendering if tx mapping table is missing/misconfigured.
-    console.warn("[post_blobs] tx mapping read failed:", error.message);
-    return out;
-  }
-
-  for (const row of (data ?? []) as PostBlobRow[]) {
-    out.set(row.blob_name, row);
-  }
-  return out;
+  void blobNames;
+  return new Map();
 }
 
 function parseTimestampFromBlobName(blobNameSuffix: string): number | null {
@@ -463,47 +404,9 @@ async function mapWithConcurrency<T, R>(
 }
 
 async function seedPostIndexFromLocalFile(client: ShelbyNodeClient, signerAddress: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase.from("post_blobs").select("blob_name").limit(1);
-  if (error) return;
-  if (data && data.length > 0) return;
-
-  const legacy = await readPostIndex();
-  if (legacy.items.length === 0) return;
-
-  const candidates = legacy.items
-    .filter((item) => item.blobName.startsWith(POST_PREFIX))
-    .slice(0, MAX_INDEX_ITEMS);
-
-  const rows: Omit<PostBlobRow, "created_at">[] = [];
-  for (const item of candidates) {
-    let authorAddress = "";
-    try {
-      const raw = await readShelbyBlobAsText(client, signerAddress, item.blobName);
-      const post = parsePostBlob(signerAddress, `${signerAddress}/${item.blobName}`, raw);
-      authorAddress = post?.author ? normalizeAddress(post.author) : "";
-    } catch {
-      authorAddress = "";
-    }
-
-    rows.push({
-      blob_name: item.blobName,
-      owner_address: signerAddress,
-      author_address: authorAddress,
-      post_timestamp: item.timestamp,
-      tx_hash: item.txHash ?? null,
-      tx_explorer_url: item.txExplorerUrl ?? null,
-      shelby_tx_explorer_url: item.shelbyTxExplorerUrl ?? null,
-      shelby_blob_url: item.shelbyExplorerUrl ?? null
-    });
-  }
-
-  // Best-effort seed; do not fail hard.
-  try {
-    await supabase.from("post_blobs").upsert(rows, { onConflict: "blob_name" });
-  } catch {
-    // ignore
-  }
+  void client;
+  void signerAddress;
+  // No-op: no Supabase post index.
 }
 
 function parsePostBlob(ownerAddress: string, id: string, raw: string): Post | null {
@@ -607,25 +510,8 @@ export async function createShelbyPost(input: CreateShelbyPostInput): Promise<Po
     const shelbyTxExplorerUrl = getShelbyTxExplorerUrl(txHash, signerAddress);
     const shelbyExplorerUrl = getShelbyBlobReadUrl(network, signerAddress, blobName);
 
-    await upsertPostIndexRow({
-      blob_name: blobName,
-      owner_address: signerAddress,
-      author_address: normalizeAddress(author),
-      post_timestamp: timestamp,
-      tx_hash: txHash,
-      tx_explorer_url: txExplorerUrl,
-      shelby_tx_explorer_url: shelbyTxExplorerUrl,
-      shelby_blob_url: shelbyExplorerUrl
-    });
-
-    // Best-effort: index hashtags in Supabase for trending/tag feeds.
-    await indexHashtagsForPost({
-      postId,
-      blobName,
-      author,
-      timestamp,
-      content
-    });
+    // No DB writes: post and hashtags live on Shelby only.
+    await indexHashtagsForPost({ content });
 
     // Best-effort: emit @mention notifications (post + metadata).
     try {
@@ -667,9 +553,6 @@ export async function listShelbyPosts(args?: { author?: string; limit?: number }
   const limit = Math.max(1, Math.min(200, args?.limit ?? DEFAULT_LIST_LIMIT));
   const authorFilter = typeof args?.author === "string" && args.author.trim() ? normalizeAddress(args.author) : "";
 
-  // Best-effort: keep local legacy seed for tx mapping, but do not depend on it for listing.
-  await seedPostIndexFromLocalFile(client, signerAddress);
-
   // List all blobs for the signer account via the SDK (SDK handles auth/indexer).
   const accountBlobs = await client.coordination.getAccountBlobs({
     account: signer.accountAddress
@@ -688,48 +571,8 @@ export async function listShelbyPosts(args?: { author?: string; limit?: number }
       return tb - ta;
     });
 
-  // Use Supabase mapping (if present) to pre-filter author timelines without downloading hundreds of blobs.
-  const txMap = await getTxMappingsForBlobs(postMetas.slice(0, 500).map((m) => m.blobName));
-
-  const selected: { blobName: string; createdMicros: number }[] = [];
-  const unknown: { blobName: string; createdMicros: number }[] = [];
-
-  if (authorFilter) {
-    for (const meta of postMetas) {
-      const mappedAuthor = txMap.get(meta.blobName)?.author_address?.trim().toLowerCase() ?? "";
-      if (mappedAuthor) {
-        if (mappedAuthor === authorFilter) selected.push(meta);
-      } else {
-        unknown.push(meta);
-      }
-      if (selected.length >= limit) break;
-    }
-  } else {
-    selected.push(...postMetas.slice(0, limit));
-  }
-
-  // If we still need more for author timelines (unmapped legacy posts), scan by downloading until we fill `limit`.
-  if (authorFilter && selected.length < limit && unknown.length) {
-    const needed = limit - selected.length;
-    const scan = unknown.slice(0, Math.min(200, Math.max(needed * 10, 50)));
-    const scanned = await mapWithConcurrency(scan, DOWNLOAD_CONCURRENCY, async (meta) => {
-      try {
-        const raw = await readShelbyBlobAsText(client, signerAddress, meta.blobName);
-        const post = parsePostBlob(signerAddress, `${signerAddress}/${meta.blobName}`, raw);
-        if (!post) return null;
-        if (normalizeAddress(post.author) !== authorFilter) return null;
-        return meta;
-      } catch {
-        return null;
-      }
-    });
-
-    for (const meta of scanned) {
-      if (!meta) continue;
-      selected.push(meta);
-      if (selected.length >= limit) break;
-    }
-  }
+  const scanLimit = Math.min(postMetas.length, authorFilter ? Math.max(limit * 6, 120) : limit);
+  const selected = postMetas.slice(0, scanLimit);
 
   const hydrated = await mapWithConcurrency(selected, DOWNLOAD_CONCURRENCY, async (meta) => {
     try {
@@ -740,15 +583,8 @@ export async function listShelbyPosts(args?: { author?: string; limit?: number }
       // If it wasn't pre-filtered (feed), apply author filter here too.
       if (authorFilter && normalizeAddress(post.author) !== authorFilter) return null;
 
-      const mapping = txMap.get(meta.blobName);
       const base = post as Post;
-      return {
-        ...base,
-        txHash: mapping?.tx_hash ?? base.txHash,
-        txExplorerUrl: mapping?.tx_explorer_url ?? base.txExplorerUrl,
-        shelbyTxExplorerUrl: mapping?.shelby_tx_explorer_url ?? base.shelbyTxExplorerUrl,
-        shelbyExplorerUrl: mapping?.shelby_blob_url ?? base.shelbyExplorerUrl
-      } as Post;
+      return base;
     } catch {
       return null;
     }
@@ -885,16 +721,7 @@ export async function fetchShelbyPostById(postId: string): Promise<Post | null> 
     const post = parsePostBlob(ownerAddress, `${ownerAddress}/${blobName}`, raw);
     if (!post) return null;
 
-    const txMap = await getTxMappingsForBlobs([blobName]);
-    const mapping = txMap.get(blobName);
-
-    return {
-      ...post,
-      txHash: mapping?.tx_hash ?? post.txHash,
-      txExplorerUrl: mapping?.tx_explorer_url ?? post.txExplorerUrl,
-      shelbyTxExplorerUrl: mapping?.shelby_tx_explorer_url ?? post.shelbyTxExplorerUrl,
-      shelbyExplorerUrl: mapping?.shelby_blob_url ?? post.shelbyExplorerUrl
-    };
+    return post;
   } catch {
     return null;
   }

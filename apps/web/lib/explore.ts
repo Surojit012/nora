@@ -1,9 +1,9 @@
 import "server-only";
 
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { listShelbyPosts } from "@/lib/shelbyServer";
 import { getInteractionSummaries, type InteractionSummary } from "@/lib/interactions";
 import type { Post } from "@/lib/types";
+import { extractHashtags } from "@/lib/hashtags";
 
 type ExploreMode = "for_you" | "trending" | "latest";
 
@@ -17,23 +17,13 @@ function clampInt(value: unknown, min: number, max: number, fallback: number) {
   return Math.max(min, Math.min(max, Math.trunc(n)));
 }
 
-async function getTagsForPosts(postIds: string[]) {
-  const ids = Array.from(new Set(postIds.map((v) => v.trim()).filter(Boolean))).slice(0, 300);
+function getTagsForPostsFromContent(posts: Post[]) {
   const map = new Map<string, string[]>();
-  for (const id of ids) map.set(id, []);
-  if (ids.length === 0) return map;
-
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("post_hashtags")
-    .select("post_id,tag")
-    .in("post_id", ids);
-  if (error) throw new Error(`Hashtags read failed: ${error.message}`);
-
-  for (const row of (data ?? []) as { post_id: string; tag: string }[]) {
-    const arr = map.get(row.post_id);
-    if (!arr) continue;
-    arr.push(row.tag);
+  for (const post of posts) {
+    const tags = extractHashtags(post.text ?? "")
+      .map((tag) => tag.trim().replace(/^#/, "").toLowerCase())
+      .filter(Boolean);
+    map.set(post.id, tags);
   }
   return map;
 }
@@ -137,7 +127,9 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
 
   if (mode === "for_you" && viewer) {
     const signalPostIds = await listViewerSignalPostIds(viewer, 120);
-    const signalTags = await getTagsForPosts(signalPostIds);
+    const signalTags = getTagsForPostsFromContent(
+      pool.filter((p) => signalPostIds.includes(p.id))
+    );
     const counts = new Map<string, number>();
     for (const tags of signalTags.values()) {
       for (const t of tags) counts.set(t, (counts.get(t) ?? 0) + 1);
@@ -146,9 +138,9 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
     // Weight by rank (diminishing returns).
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25);
     viewerTagWeights = new Map(top.map(([tag, count], i) => [tag, count / Math.sqrt(i + 1)]));
-    tagsByPost = await getTagsForPosts(pool.map((p) => p.id));
+    tagsByPost = getTagsForPostsFromContent(pool);
   } else if (mode !== "latest") {
-    tagsByPost = await getTagsForPosts(pool.map((p) => p.id));
+    tagsByPost = getTagsForPostsFromContent(pool);
   }
 
   const scored = pool.map((post) => {

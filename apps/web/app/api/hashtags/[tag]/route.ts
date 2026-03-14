@@ -1,120 +1,12 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabaseClient";
-import { ShelbyNodeClient } from "@shelby-protocol/sdk/node";
-import { Account, Ed25519PrivateKey, Network } from "@aptos-labs/ts-sdk";
+import { listShelbyPosts } from "@/lib/shelbyServer";
+import { extractHashtags } from "@/lib/hashtags";
 import { Post } from "@/lib/types";
 
 type RouteContext = { params: { tag: string } };
 
 function error(status: number, message: string) {
   return NextResponse.json({ error: message }, { status });
-}
-
-function getRequiredEnv(name: string): string {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
-  return value;
-}
-
-function getShelbyNetwork(): Network {
-  const configured = process.env.SHELBY_NETWORK?.trim()?.toLowerCase();
-  if (!configured) return Network.TESTNET;
-  if (configured === "testnet") return Network.TESTNET;
-  if (configured === "shelbynet") return Network.SHELBYNET;
-  if (configured === "local") return Network.LOCAL;
-  return Network.TESTNET;
-}
-
-function getSigner(): Account {
-  const privateKeyHex = getRequiredEnv("SHELBY_SIGNER_PRIVATE_KEY");
-  const privateKey = new Ed25519PrivateKey(privateKeyHex);
-  return Account.fromPrivateKey({ privateKey });
-}
-
-function getShelbyClient(): ShelbyNodeClient {
-  const apiKey = getRequiredEnv("SHELBY_API_KEY");
-  const network = getShelbyNetwork();
-
-  const rpcBaseUrl = process.env.SHELBY_RPC_BASE_URL?.trim();
-  const rpcApiKey = process.env.SHELBY_RPC_API_KEY?.trim();
-  const aptosFullnode = process.env.SHELBY_APTOS_FULLNODE_URL?.trim();
-  const aptosIndexer = process.env.SHELBY_APTOS_INDEXER_URL?.trim();
-  const aptosApiKey = process.env.SHELBY_APTOS_API_KEY?.trim();
-
-  return new ShelbyNodeClient(
-    {
-      network,
-      apiKey,
-      ...(aptosFullnode || aptosIndexer
-        ? {
-            aptos: {
-              ...(aptosFullnode ? { fullnode: aptosFullnode } : {}),
-              ...(aptosIndexer ? { indexer: aptosIndexer } : {}),
-              clientConfig: {
-                API_KEY: aptosApiKey ?? apiKey
-              }
-            }
-          }
-        : {}),
-      ...(rpcBaseUrl || rpcApiKey
-        ? {
-            rpc: {
-              ...(rpcBaseUrl ? { baseUrl: rpcBaseUrl } : {}),
-              apiKey: rpcApiKey ?? apiKey
-            }
-          }
-        : {})
-    } as never
-  );
-}
-
-async function downloadPostFromUrl(url: string): Promise<Post | null> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const raw = await res.text();
-    const parsed = JSON.parse(raw) as { type?: string; author?: string; content?: string; timestamp?: number };
-    if (parsed.type !== "post") return null;
-    if (!parsed.author || !parsed.content || typeof parsed.timestamp !== "number") return null;
-    return {
-      id: url,
-      author: String(parsed.author),
-      text: String(parsed.content),
-      createdAt: new Date(parsed.timestamp).toISOString()
-    };
-  } catch {
-    return null;
-  }
-}
-
-async function downloadPost(
-  client: ShelbyNodeClient,
-  accounts: string[],
-  blobName: string
-): Promise<Post | null> {
-  try {
-    for (const account of accounts) {
-      try {
-        const blob = await client.download({ account, blobName });
-        const raw = await new Response(blob.readable).text();
-        const parsed = JSON.parse(raw) as { type?: string; author?: string; content?: string; timestamp?: number };
-        if (parsed.type !== "post") return null;
-        if (!parsed.author || !parsed.content || typeof parsed.timestamp !== "number") return null;
-        return {
-          id: `${account}/${blobName}`,
-          author: String(parsed.author),
-          text: String(parsed.content),
-          createdAt: new Date(parsed.timestamp).toISOString()
-        };
-      } catch {
-        // Try the next account.
-      }
-    }
-    return null;
-  } catch {
-    console.warn("[GET /api/hashtags/:tag] Failed to download post blob:", { accounts, blobName });
-    return null;
-  }
 }
 
 export async function GET(request: Request, context: RouteContext) {
@@ -125,45 +17,16 @@ export async function GET(request: Request, context: RouteContext) {
     const url = new URL(request.url);
     const limit = Math.max(1, Math.min(50, Number(url.searchParams.get("limit") ?? 20)));
 
-    const { data, error: dbError } = await supabase
-      .from("post_hashtags")
-      .select("blob_name, post_timestamp, author")
-      .eq("tag", tag)
-      .order("post_timestamp", { ascending: false })
-      .limit(limit);
+    const scan = Math.max(200, limit * 20);
+    const posts = await listShelbyPosts({ limit: scan });
+    const filtered = posts.filter((post) => {
+      const tags = extractHashtags(post.text ?? "")
+        .map((t) => t.trim().replace(/^#/, "").toLowerCase())
+        .filter(Boolean);
+      return tags.includes(tag);
+    });
 
-    if (dbError) return error(500, dbError.message);
-
-    const blobNames = (data ?? []) as { blob_name: string; author?: string }[];
-    const blobNameList = blobNames.map((row) => row.blob_name);
-    const postBlobMap = new Map<string, { owner_address?: string; shelby_blob_url?: string }>();
-
-    if (blobNameList.length > 0) {
-      const { data: blobsData } = await supabase
-        .from("post_blobs")
-        .select("blob_name, owner_address, shelby_blob_url")
-        .in("blob_name", blobNameList);
-      for (const row of (blobsData ?? []) as { blob_name: string; owner_address?: string; shelby_blob_url?: string }[]) {
-        postBlobMap.set(row.blob_name, row);
-      }
-    }
-
-    const signer = getSigner();
-    const client = getShelbyClient();
-    const fallbackAccount = signer.accountAddress.toString();
-
-    const posts = await Promise.all(
-      blobNames.map(async (row) => {
-        const mapped = postBlobMap.get(row.blob_name);
-        if (mapped?.shelby_blob_url) {
-          const viaUrl = await downloadPostFromUrl(mapped.shelby_blob_url);
-          if (viaUrl) return viaUrl;
-        }
-        const accounts = [mapped?.owner_address, row.author, fallbackAccount].filter(Boolean) as string[];
-        return downloadPost(client, accounts, row.blob_name);
-      })
-    );
-    return NextResponse.json(posts.filter((p): p is Post => p !== null));
+    return NextResponse.json(filtered.slice(0, limit));
   } catch (e) {
     return error(500, e instanceof Error ? e.message : "Failed to fetch hashtag feed.");
   }
