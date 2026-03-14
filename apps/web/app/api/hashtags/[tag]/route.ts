@@ -68,6 +68,25 @@ function getShelbyClient(): ShelbyNodeClient {
   );
 }
 
+async function downloadPostFromUrl(url: string): Promise<Post | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const raw = await res.text();
+    const parsed = JSON.parse(raw) as { type?: string; author?: string; content?: string; timestamp?: number };
+    if (parsed.type !== "post") return null;
+    if (!parsed.author || !parsed.content || typeof parsed.timestamp !== "number") return null;
+    return {
+      id: url,
+      author: String(parsed.author),
+      text: String(parsed.content),
+      createdAt: new Date(parsed.timestamp).toISOString()
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function downloadPost(
   client: ShelbyNodeClient,
   accounts: string[],
@@ -115,19 +134,34 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (dbError) return error(500, dbError.message);
 
+    const blobNames = (data ?? []) as { blob_name: string; author?: string }[];
+    const blobNameList = blobNames.map((row) => row.blob_name);
+    const postBlobMap = new Map<string, { owner_address?: string; shelby_blob_url?: string }>();
+
+    if (blobNameList.length > 0) {
+      const { data: blobsData } = await supabase
+        .from("post_blobs")
+        .select("blob_name, owner_address, shelby_blob_url")
+        .in("blob_name", blobNameList);
+      for (const row of (blobsData ?? []) as { blob_name: string; owner_address?: string; shelby_blob_url?: string }[]) {
+        postBlobMap.set(row.blob_name, row);
+      }
+    }
+
     const signer = getSigner();
     const client = getShelbyClient();
-    const account = signer.accountAddress.toString();
-    const blobNames = (data ?? []) as { blob_name: string; author?: string }[];
+    const fallbackAccount = signer.accountAddress.toString();
 
     const posts = await Promise.all(
-      blobNames.map((row) =>
-        downloadPost(
-          client,
-          [account, row.author ?? ""].filter(Boolean),
-          row.blob_name
-        )
-      )
+      blobNames.map(async (row) => {
+        const mapped = postBlobMap.get(row.blob_name);
+        if (mapped?.shelby_blob_url) {
+          const viaUrl = await downloadPostFromUrl(mapped.shelby_blob_url);
+          if (viaUrl) return viaUrl;
+        }
+        const accounts = [mapped?.owner_address, row.author, fallbackAccount].filter(Boolean) as string[];
+        return downloadPost(client, accounts, row.blob_name);
+      })
     );
     return NextResponse.json(posts.filter((p): p is Post => p !== null));
   } catch (e) {
