@@ -185,6 +185,20 @@ export function Sidebar() {
     <>
       <Link href="/" className="logo">
         <Logo title="nora" />
+        <span style={{
+          padding: '2px 6px',
+          fontSize: '10px',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: 'var(--gold)',
+          backgroundColor: 'var(--card)',
+          border: '1px solid var(--border2)',
+          borderRadius: '4px',
+          lineHeight: 1
+        }}>
+          Beta
+        </span>
       </Link>
 
       <nav>
