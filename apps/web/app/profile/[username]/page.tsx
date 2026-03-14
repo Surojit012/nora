@@ -10,6 +10,7 @@ import { updateUserProfile, uploadAvatar, uploadCover } from "@/lib/identityClie
 import { PublicUser } from "@/lib/identity";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FollowButton } from "@/components/FollowButton";
 
 type ProfileUser = PublicUser;
 
@@ -102,45 +103,7 @@ export default function PublicProfilePage({ params }: ProfilePageProps) {
     return normalize(user.wallet_address) === normalize(walletAddress);
   }, [user, walletAddress]);
 
-  const followStateQuery = useQuery({
-    queryKey: ["follow-state", viewer, user?.wallet_address],
-    queryFn: async () => {
-      if (!viewer || !user?.wallet_address) return { following: false };
-      const params = new URLSearchParams();
-      params.set("follower", viewer);
-      params.set("following", user.wallet_address);
-      const res = await fetch(`/api/follow?${params.toString()}`, { cache: "no-store" });
-      if (!res.ok) {
-        const payload = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
-        throw new Error(payload?.details ? `${payload.error ?? "Follow failed."} ${payload.details}` : payload?.error ?? "Follow failed.");
-      }
-      return (await res.json()) as { following: boolean };
-    },
-    enabled: Boolean(!canEdit && viewer && user?.wallet_address),
-    staleTime: 10_000
-  });
 
-  const toggleFollowMutation = useMutation({
-    mutationFn: async () => {
-      if (!viewer || !user?.wallet_address) throw new Error("Connect wallet first.");
-      const res = await fetch("/api/follow", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ follower: viewer, following: user.wallet_address })
-      });
-      if (!res.ok) {
-        const payload = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
-        throw new Error(payload?.details ? `${payload.error ?? "Follow failed."} ${payload.details}` : payload?.error ?? "Follow failed.");
-      }
-      return (await res.json()) as { following: boolean; followersCount?: number };
-    },
-    onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: ["follow-state", viewer, user?.wallet_address] });
-      if (typeof data.followersCount === "number") {
-        setUser((prev) => (prev ? { ...prev, followers: data.followersCount ?? prev.followers } : prev));
-      }
-    }
-  });
 
   useEffect(() => {
     async function loadReplies() {
@@ -212,15 +175,15 @@ export default function PublicProfilePage({ params }: ProfilePageProps) {
 	                  </div>
 
                   <div className="flex items-center gap-2">
-                    {!canEdit && viewer ? (
-                      <button
-                        type="button"
-                        onClick={() => toggleFollowMutation.mutate()}
-                        disabled={toggleFollowMutation.isPending || followStateQuery.isLoading}
-                        className="rounded-[20px] border border-border bg-transparent px-4 py-2 text-xs font-medium uppercase tracking-[0.04em] text-foreground transition-colors duration-150 ease-out hover:bg-card disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {followStateQuery.data?.following ? "Following" : "Follow"}
-                      </button>
+                    {!canEdit && viewer && user?.wallet_address ? (
+                      <FollowButton
+                        targetAddress={user.wallet_address}
+                        onFollowSuccess={(data) => {
+                          if (typeof data.followersCount === "number") {
+                            setUser((prev) => (prev ? { ...prev, followers: data.followersCount ?? prev.followers } : prev));
+                          }
+                        }}
+                      />
                     ) : null}
 
                     <Link href="/" className="rounded-lg border border-border bg-surface px-3 py-2 text-xs transition-colors duration-150 ease-out hover:bg-card">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { FollowButton } from "@/components/FollowButton";
 
 type TrendingItem = { tag: string; count: number };
 type TrendingResponse = { last24h: TrendingItem[]; last7d: TrendingItem[] };
@@ -20,7 +21,6 @@ export function RightPanel() {
   const viewer = account?.address?.toString() ?? "";
   const [trending, setTrending] = useState<TrendingResponse | null>(null);
   const [creators, setCreators] = useState<TopCreator[]>([]);
-  const [followBusy, setFollowBusy] = useState<string>("");
 
   useEffect(() => {
     mountedRef.current = true;
@@ -110,30 +110,7 @@ export function RightPanel() {
                 <div className="who-name">@{c.username}</div>
                 <div className="who-handle">{formatCount(c.followersCount)} followers</div>
               </div>
-              <button
-                type="button"
-                className="follow-btn"
-                disabled={!viewer || followBusy === c.walletAddress}
-                onClick={async () => {
-                  if (!viewer) return;
-                  setFollowBusy(c.walletAddress);
-                  try {
-                    const res = await fetch("/api/follow", {
-                      method: "POST",
-                      headers: { "content-type": "application/json" },
-                      body: JSON.stringify({ follower: viewer, following: c.walletAddress })
-                    });
-                    if (res.ok && mountedRef.current) {
-                      // Remove from suggestions list after following.
-                      setCreators((prev) => prev.filter((x) => x.walletAddress !== c.walletAddress));
-                    }
-                  } finally {
-                    if (mountedRef.current) setFollowBusy("");
-                  }
-                }}
-              >
-                {followBusy === c.walletAddress ? "…" : "Follow"}
-              </button>
+              <FollowButton targetAddress={c.walletAddress} className="follow-btn" />
             </div>
           ))
         )}
