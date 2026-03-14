@@ -2,8 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
+    serverComponentsExternalPackages: ["@shelby-protocol/clay-codes"],
     outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/@shelby-protocol/clay-codes/dist/**/*.wasm'],
+      '/api/**/*': [
+        './node_modules/@shelby-protocol/clay-codes/dist/**/*.wasm',
+        '../../node_modules/@shelby-protocol/clay-codes/dist/**/*.wasm', // Handle monorepo hoisting
+      ],
     },
   },
   async headers() {
