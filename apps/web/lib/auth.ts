@@ -28,7 +28,7 @@ export function verifyAuthSignature(
       return null;
     }
 
-    if (expectedMessagePrefix && !message.startsWith(expectedMessagePrefix)) {
+    if (expectedMessagePrefix && !message.includes(expectedMessagePrefix)) {
       return null;
     }
 

@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = verifyAuthSignature(request, "Follow ");
+    const auth = verifyAuthSignature(request, "\"Follow ");
     if (!auth) return error(401, "Unauthorized: Invalid wallet signature.");
 
     const body = await request.json().catch(() => ({}));
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const auth = verifyAuthSignature(request, "Unfollow ");
+    const auth = verifyAuthSignature(request, "\"Unfollow ");
     if (!auth) return error(401, "Unauthorized: Invalid wallet signature.");
 
     const body = await request.json().catch(() => ({}));

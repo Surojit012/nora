@@ -14,7 +14,7 @@
     "@aptos-labs/wallet-adapter-react": "^4.0.3",
     "@mizuwallet-sdk/core": "^1.4.0",
     "@shelby-protocol/react": "^1.0.3",
-    "@shelby-protocol/sdk": "^0.2.3",
+    "@shelby-protocol/sdk": "^0.2.4",
     "@supabase/supabase-js": "^2.99.1",
     "@tanstack/react-query": "^5.90.21",
     "@telegram-apps/bridge": "^1.9.2",

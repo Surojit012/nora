@@ -346,7 +346,6 @@ async function uploadShelbyBlob(args: {
   const commitments = await generateCommitments(args.provider, args.blobData);
 
   const { transaction } = await args.client.coordination.registerBlob({
-    // @ts-expect-error: Account type mismatch between workspace sdk instances
     account: args.signer,
     blobName: args.blobName,
     blobMerkleRoot: commitments.blob_merkle_root,
@@ -359,8 +358,11 @@ async function uploadShelbyBlob(args: {
     transactionHash: transaction.hash
   });
 
+  // Give the Shelby RPC node's indexer time to ingest the transaction
+  // before we attempt to finalize the upload. Without this, the RPC may 500.
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
   await args.client.rpc.putBlob({
-    // @ts-expect-error: AccountAddress type mismatch between workspace sdk instances
     account: args.signer.accountAddress,
     blobName: args.blobName,
     blobData: args.blobData
@@ -667,7 +669,6 @@ export async function listShelbyPosts(args?: { author?: string; limit?: number }
 
   // List all blobs for the signer account via the SDK (SDK handles auth/indexer).
   const accountBlobs = await client.coordination.getAccountBlobs({
-    // @ts-expect-error: AccountAddress type mismatch between workspace sdk instances
     account: signer.accountAddress
   });
 
@@ -818,7 +819,6 @@ export async function getDebugBlobStats(args?: { author?: string; limit?: number
   const limit = Math.max(1, Math.min(500, args?.limit ?? 200));
   const authorFilter = typeof args?.author === "string" && args.author.trim() ? normalizeAddress(args.author) : "";
 
-  // @ts-expect-error: AccountAddress type mismatch between workspace sdk instances
   const blobs = await client.coordination.getAccountBlobs({ account: signer.accountAddress });
   const postBlobs = blobs
     .filter((b) => Boolean(b) && b.isWritten && !b.isDeleted && typeof b.blobNameSuffix === "string")

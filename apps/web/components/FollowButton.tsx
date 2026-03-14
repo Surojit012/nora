@@ -44,7 +44,7 @@ export function FollowButton({ targetAddress, onFollowSuccess, className, disabl
 
       // Retrieve signature for backend verification
       const prompt = await signMessage({
-        message,
+        message: JSON.stringify(message),
         nonce: Date.now().toString(),
       });
 
@@ -52,11 +52,25 @@ export function FollowButton({ targetAddress, onFollowSuccess, className, disabl
         throw new Error("Signature rejected");
       }
 
+      let sigHex = "";
+      if (typeof prompt.signature === "string") {
+        sigHex = prompt.signature;
+      } else if (prompt.signature && typeof (prompt.signature as any).toUint8Array === "function") {
+        sigHex = Buffer.from((prompt.signature as any).toUint8Array()).toString("hex");
+      } else if (prompt.signature && (prompt.signature as any).data) { // Handle generic objects
+        sigHex = Buffer.from((prompt.signature as any).data).toString("hex");
+      } else if (prompt.signature instanceof Uint8Array || Array.isArray(prompt.signature)) {
+        sigHex = Buffer.from(prompt.signature).toString("hex");
+      } else {
+        // Fallback for weird wallet plugins
+        sigHex = String(prompt.signature);
+      }
+
       // Format headers suitable for Ed25519 processing
       const headers = new Headers({
         "content-type": "application/json",
         "x-aptos-pubkey": account.publicKey.toString(),
-        "x-aptos-signature": typeof prompt.signature === "string" ? prompt.signature : Buffer.from(prompt.signature as any).toString("hex"),
+        "x-aptos-signature": sigHex,
         "x-aptos-message": prompt.fullMessage,
       });
 

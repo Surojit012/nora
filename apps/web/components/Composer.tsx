@@ -385,11 +385,27 @@ export function Composer() {
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {createPostMutation.data.shelbyExplorerUrl ? (
-                <a
-                  href={`${createPostMutation.data.shelbyExplorerUrl}?download=true`}
-                  target="_blank"
-                  rel="noreferrer"
-                  download="shelby-blob.json"
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(createPostMutation.data.shelbyExplorerUrl!);
+                      if (!res.ok) throw new Error("Failed to fetch blob");
+                      const json = await res.json();
+                      const blob = new window.Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `shelby-blob-${Date.now()}.json`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    } catch (e) {
+                      console.error("Failed to download blob:", e);
+                      alert("Failed to download blob. Please try again.");
+                    }
+                  }}
                   className="action-icon-btn"
                   style={{
                     padding: "6px 12px",
@@ -398,7 +414,6 @@ export function Composer() {
                     border: "1px solid var(--border2)",
                     borderRadius: 16,
                     color: "var(--text)",
-                    textDecoration: "none",
                     display: "flex",
                     alignItems: "center",
                     gap: 6
@@ -410,7 +425,7 @@ export function Composer() {
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
                   View Blob
-                </a>
+                </button>
               ) : null}
 
               {createPostMutation.data.txHash ? (
