@@ -56,7 +56,7 @@ function renderEntities(text: string) {
           key={`${idx}-${part}`}
           href={`/tag/${encodeURIComponent(tag)}`}
           className="hashtag"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           {part}
         </Link>
