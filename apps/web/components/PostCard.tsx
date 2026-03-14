@@ -302,16 +302,29 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
   return (
     <>
       <Wrapper {...wrapperProps}>
-        <Avatar
-          src={authorAvatar}
-          alt={authorUsername ? `${authorUsername} avatar` : "avatar"}
-          addressHint={post.author}
-          label={authorUsername || post.author}
-          size={36}
-        />
+        <Link 
+          href={`/profile/${encodeURIComponent(authorUsername || post.author)}`} 
+          onClick={(e: React.MouseEvent) => e.stopPropagation()} 
+          style={{ display: 'flex', zIndex: 10, position: 'relative' }}
+        >
+          <Avatar
+            src={authorAvatar}
+            alt={authorUsername ? `${authorUsername} avatar` : "avatar"}
+            addressHint={post.author}
+            label={authorUsername || post.author}
+            size={36}
+          />
+        </Link>
         <div className="tweet-body">
           <div className="tweet-header">
-            <span className="tweet-name">{authorUsername ? authorUsername : shortenAddress(post.author)}</span>
+            <Link 
+              href={`/profile/${encodeURIComponent(authorUsername || post.author)}`} 
+              className="tweet-name" 
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              style={{ position: 'relative', zIndex: 10 }}
+            >
+              {authorUsername ? authorUsername : shortenAddress(post.author)}
+            </Link>
             <span className="tweet-handle">{authorUsername ? `@${authorUsername}` : "@wallet"}</span>
             <span className="tweet-dot">·</span>
             <span className="tweet-time" title={formatTimestamp(post.createdAt)}>
@@ -645,7 +658,12 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
               {commentsQuery.data.comments.map((c) => (
                 <div key={c.id} style={{ padding: "12px 0", borderTop: "1px solid var(--border)" }}>
                   <div className="tweet-header">
-                    <span className="tweet-name">{shortenAddress(c.author)}</span>
+                    <Link 
+                      href={`/profile/${encodeURIComponent(c.author)}`} 
+                      className="tweet-name"
+                    >
+                      {shortenAddress(c.author)}
+                    </Link>
                     <span className="tweet-dot">·</span>
                     <span className="tweet-time">{formatRelativeTime(c.createdAt)}</span>
                   </div>

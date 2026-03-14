@@ -133,7 +133,14 @@ export default function NotificationsPage() {
                       >
                         <path d={icon(n.type)} strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span style={{ fontFamily: "var(--font-mono)" }}>{actorLabel}</span>
+                      <Link 
+                        href={`/profile/${encodeURIComponent(n.actorUser?.username || n.actor)}`} 
+                        style={{ fontFamily: "var(--font-mono)", position: "relative", zIndex: 10 }}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        className="hover:underline"
+                      >
+                        {actorLabel}
+                      </Link>
                     </span>
                     <span style={{ fontFamily: "var(--font-mono)" }}>{formatTime(n.createdAt)}</span>
                   </div>
