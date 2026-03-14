@@ -4,6 +4,7 @@ import { listShelbyPosts } from "@/lib/shelbyServer";
 import { getInteractionSummaries, type InteractionSummary } from "@/lib/interactions";
 import type { Post } from "@/lib/types";
 import { extractHashtags } from "@/lib/hashtags";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type ExploreMode = "for_you" | "trending" | "latest";
 
