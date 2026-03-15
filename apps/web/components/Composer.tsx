@@ -34,6 +34,9 @@ export function Composer() {
   const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStage, setUploadStage] = useState<string | null>(null);
+  const progressTimers = useRef<number[]>([]);
 
   const viewerAddress = account?.address?.toString() ?? "";
   const viewerUserQuery = useQuery({
@@ -63,6 +66,8 @@ export function Composer() {
         poll: payload.poll
       }),
     onSuccess: () => {
+      setUploadProgress(100);
+      setUploadStage("Done");
       setContent("");
       setAttachments((prev) => {
         for (const a of prev) {
@@ -78,9 +83,18 @@ export function Composer() {
       setEmojiOpen(false);
       setValidationError(null);
       window.dispatchEvent(new Event("nora:post-created"));
+      window.setTimeout(() => {
+        setUploadProgress(0);
+        setUploadStage(null);
+      }, 1500);
     },
     onError: (error) => {
       setValidationError(error.message);
+      setUploadStage("Failed");
+      window.setTimeout(() => {
+        setUploadProgress(0);
+        setUploadStage(null);
+      }, 1500);
     }
   });
 
@@ -100,6 +114,34 @@ export function Composer() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!createPostMutation.isPending) {
+      progressTimers.current.forEach((t) => window.clearTimeout(t));
+      progressTimers.current = [];
+      return;
+    }
+
+    setUploadProgress(8);
+    setUploadStage("Preparing");
+
+    const t1 = window.setTimeout(() => {
+      setUploadProgress(35);
+      setUploadStage("Registering on-chain");
+    }, 600);
+
+    const t2 = window.setTimeout(() => {
+      setUploadProgress(65);
+      setUploadStage("Uploading to Shelby");
+    }, 1600);
+
+    const t3 = window.setTimeout(() => {
+      setUploadProgress(85);
+      setUploadStage("Finalizing");
+    }, 3000);
+
+    progressTimers.current = [t1, t2, t3];
+  }, [createPostMutation.isPending]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -355,6 +397,33 @@ export function Composer() {
             {createPostMutation.isPending ? "Posting..." : "Post"}
           </button>
         </div>
+
+        {createPostMutation.isPending || uploadStage ? (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)" }}>
+              <span>{uploadStage ?? "Uploading"}</span>
+              <span>{Math.min(100, Math.max(0, uploadProgress))}%</span>
+            </div>
+            <div
+              style={{
+                marginTop: 6,
+                height: 6,
+                borderRadius: 999,
+                background: "var(--border2)",
+                overflow: "hidden"
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${Math.min(100, Math.max(0, uploadProgress))}%`,
+                  background: "var(--gold)",
+                  transition: "width 200ms ease"
+                }}
+              />
+            </div>
+          </div>
+        ) : null}
 
         {!walletAddress ? (
           <div className="tweet-text" style={{ marginTop: 10, color: "var(--muted)", fontSize: 12 }}>
