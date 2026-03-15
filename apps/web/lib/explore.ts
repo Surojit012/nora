@@ -34,15 +34,9 @@ async function listViewerSignalPostIds(viewer: string, limit: number) {
   if (!addr) return [];
 
   const supabase = getSupabaseAdmin();
-  const [likes, reposts, comments] = await Promise.all([
+  const [likes, comments] = await Promise.all([
     supabase
       .from("post_likes")
-      .select("post_id,created_at")
-      .eq("user_address", addr)
-      .order("created_at", { ascending: false })
-      .limit(limit),
-    supabase
-      .from("post_reposts")
       .select("post_id,created_at")
       .eq("user_address", addr)
       .order("created_at", { ascending: false })
@@ -56,12 +50,10 @@ async function listViewerSignalPostIds(viewer: string, limit: number) {
   ]);
 
   if (likes.error) throw new Error(`Viewer likes read failed: ${likes.error.message}`);
-  if (reposts.error) throw new Error(`Viewer reposts read failed: ${reposts.error.message}`);
   if (comments.error) throw new Error(`Viewer comments read failed: ${comments.error.message}`);
 
   const seen = new Set<string>();
   for (const row of (likes.data ?? []) as { post_id: string }[]) seen.add(row.post_id);
-  for (const row of (reposts.data ?? []) as { post_id: string }[]) seen.add(row.post_id);
   for (const row of (comments.data ?? []) as { post_id: string }[]) seen.add(row.post_id);
   return [...seen].slice(0, limit * 2);
 }
@@ -71,8 +63,8 @@ function computeBaseScore(post: Post, s: InteractionSummary) {
   const created = Date.parse(post.createdAt);
   const ageHours = Math.max(0, (now - (Number.isFinite(created) ? created : now)) / 3_600_000);
 
-  // Engagement: comments and reposts are heavier than likes.
-  const engagement = s.likes * 1 + s.comments * 2.2 + s.reposts * 3.2;
+  // Engagement: comments are heavier than likes.
+  const engagement = s.likes * 1 + s.comments * 2.2;
   const engagementScore = Math.log1p(engagement) * 2.25;
 
   // Recency: fast drop after 24h, long tail after 7d.
@@ -145,7 +137,7 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
   }
 
   const scored = pool.map((post) => {
-    const s = summaries[post.id] ?? { likes: 0, reposts: 0, comments: 0, viewerLiked: false, viewerReposted: false };
+    const s = summaries[post.id] ?? { likes: 0, comments: 0, bookmarks: 0, viewerLiked: false, viewerBookmarked: false };
     const base = computeBaseScore(post, s);
     const tags = tagsByPost.get(post.id) ?? [];
     const interest = mode === "for_you" && viewer ? computeInterestBoost(tags, viewerTagWeights) : 0;
@@ -160,7 +152,9 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
   const diversified = applyDiversity(sorted, 2).slice(0, limit);
   const selectedPosts = diversified.map((x) => x.post);
   const selectedInteractions: Record<string, InteractionSummary> = {};
-  for (const p of selectedPosts) selectedInteractions[p.id] = summaries[p.id] ?? { likes: 0, reposts: 0, comments: 0, viewerLiked: false, viewerReposted: false };
+  for (const p of selectedPosts) {
+    selectedInteractions[p.id] = summaries[p.id] ?? { likes: 0, comments: 0, bookmarks: 0, viewerLiked: false, viewerBookmarked: false };
+  }
 
   return { posts: selectedPosts, interactions: selectedInteractions };
 }
