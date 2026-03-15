@@ -156,9 +156,7 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
         );
       }
       const data = (await res.json()) as { items: Record<string, InteractionSummary> };
-      return (
-        data.items[post.id] ?? { likes: 0, reposts: 0, comments: 0, viewerLiked: false, viewerReposted: false }
-      );
+      return data.items[post.id] ?? { likes: 0, comments: 0, bookmarks: 0, viewerLiked: false, viewerBookmarked: false };
     },
     initialData: initialInteractions,
     staleTime: 5_000
@@ -184,27 +182,6 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
     onError: (err) => setInteractionError(err instanceof Error ? err.message : "Like failed.")
   });
 
-  const toggleRepostMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/interactions/repost", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ postId: post.id, viewer: voterAddress })
-      });
-      if (!res.ok) {
-        const payload = (await res.json().catch(() => null)) as { error?: string; details?: string } | null;
-        throw new Error(
-          payload?.details ? `${payload.error ?? "Repost failed."} ${payload.details}` : payload?.error ?? "Repost failed."
-        );
-      }
-      return (await res.json()) as { reposted: boolean };
-    },
-    onSuccess: () => {
-      setInteractionError(null);
-      void interactionQuery.refetch();
-    },
-    onError: (err) => setInteractionError(err instanceof Error ? err.message : "Repost failed.")
-  });
 
   const commentsQuery = useQuery({
     queryKey: ["comments", post.id],
@@ -250,11 +227,9 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
     interactionQuery.data ??
     ({
       likes: 0,
-      reposts: 0,
       comments: 0,
       bookmarks: 0,
       viewerLiked: false,
-      viewerReposted: false,
       viewerBookmarked: false
     } as InteractionSummary & { viewerBookmarked?: boolean });
   const viewerBookmarked = Boolean((interactions as unknown as { viewerBookmarked?: boolean }).viewerBookmarked);
@@ -473,26 +448,30 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
 
             <button
               type="button"
-              className={`action retweet${interactions.viewerReposted ? " liked" : ""}`}
+              className="action share"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setInteractionError(null);
-                if (!connected || !voterAddress) {
-                  setInteractionError("Connect wallet first");
-                  return;
+                const shareUrl = `${window.location.origin}/post/${encodeURIComponent(post.id)}`;
+                if (navigator.share) {
+                  void navigator.share({ url: shareUrl });
+                } else {
+                  try {
+                    void navigator.clipboard.writeText(shareUrl);
+                  } catch {
+                    // ignore
+                  }
                 }
-                toggleRepostMutation.mutate();
               }}
+              aria-label="Share"
             >
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path
-                  d="M4 8V6a2 2 0 012-2h8l-2-2M16 12v2a2 2 0 01-2 2H6l2 2"
+                  d="M4 12v1a3 3 0 006 0v-1M8 3v8M5 6l3-3 3 3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              {formatCount(interactions.reposts)}
             </button>
 
             <button
@@ -548,27 +527,7 @@ export function PostCard({ post, mode = "feed", initialInteractions }: PostCardP
               </svg>
             </button>
 
-            <button
-              type="button"
-              className="action share"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                try {
-                  void navigator.clipboard.writeText(`${window.location.origin}/post/${encodeURIComponent(post.id)}`);
-                } catch {
-                  // ignore
-                }
-              }}
-            >
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path
-                  d="M4 12v1a3 3 0 006 0v-1M8 3v8M5 6l3-3 3 3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+            {/* share button moved to replace repost */}
           </div>
 
           {interactionError ? (

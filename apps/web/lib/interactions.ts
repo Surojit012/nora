@@ -9,11 +9,9 @@ function normalizeAddress(value: string): string {
 
 export type InteractionSummary = {
   likes: number;
-  reposts: number;
   comments: number;
   bookmarks: number;
   viewerLiked: boolean;
-  viewerReposted: boolean;
   viewerBookmarked: boolean;
 };
 
@@ -33,11 +31,9 @@ export async function getInteractionSummaries(args: { postIds: string[]; viewer?
   for (const id of postIds) {
     summaries[id] = {
       likes: 0,
-      reposts: 0,
       comments: 0,
       bookmarks: 0,
       viewerLiked: false,
-      viewerReposted: false,
       viewerBookmarked: false
     };
   }
@@ -46,15 +42,13 @@ export async function getInteractionSummaries(args: { postIds: string[]; viewer?
 
   const supabase = getSupabaseAdmin();
 
-  const [likesRes, repostsRes, commentsRes, bookmarksRes] = await Promise.all([
+  const [likesRes, commentsRes, bookmarksRes] = await Promise.all([
     supabase.from("post_likes").select("post_id,user_address").in("post_id", postIds),
-    supabase.from("post_reposts").select("post_id,user_address").in("post_id", postIds),
     supabase.from("post_comments").select("post_id").in("post_id", postIds),
     supabase.from("post_bookmarks").select("post_id,user_address").in("post_id", postIds)
   ]);
 
   if (likesRes.error) throw new Error(`Likes read failed: ${likesRes.error.message}`);
-  if (repostsRes.error) throw new Error(`Reposts read failed: ${repostsRes.error.message}`);
   if (commentsRes.error) throw new Error(`Comments read failed: ${commentsRes.error.message}`);
   if (bookmarksRes.error) throw new Error(`Bookmarks read failed: ${bookmarksRes.error.message}`);
 
@@ -63,13 +57,6 @@ export async function getInteractionSummaries(args: { postIds: string[]; viewer?
     if (!s) continue;
     s.likes += 1;
     if (viewer && normalizeAddress(row.user_address) === viewer) s.viewerLiked = true;
-  }
-
-  for (const row of (repostsRes.data ?? []) as { post_id: string; user_address: string }[]) {
-    const s = summaries[row.post_id];
-    if (!s) continue;
-    s.reposts += 1;
-    if (viewer && normalizeAddress(row.user_address) === viewer) s.viewerReposted = true;
   }
 
   for (const row of (commentsRes.data ?? []) as { post_id: string }[]) {
@@ -128,38 +115,6 @@ export async function toggleLike(args: { postId: string; viewer: string }) {
     console.warn("[notifications] emit like failed:", e);
   }
   return { liked: true };
-}
-
-export async function toggleRepost(args: { postId: string; viewer: string }) {
-  const postId = args.postId.trim();
-  const viewer = normalizeAddress(args.viewer);
-  if (!postId) throw new Error("postId is required.");
-  if (!viewer) throw new Error("Connect wallet first.");
-
-  const supabase = getSupabaseAdmin();
-
-  const { data: existing, error: existsErr } = await supabase
-    .from("post_reposts")
-    .select("post_id")
-    .eq("post_id", postId)
-    .eq("user_address", viewer)
-    .maybeSingle();
-
-  if (existsErr) throw new Error(`Repost read failed: ${existsErr.message}`);
-
-  if (existing) {
-    const { error } = await supabase
-      .from("post_reposts")
-      .delete()
-      .eq("post_id", postId)
-      .eq("user_address", viewer);
-    if (error) throw new Error(`Undo repost failed: ${error.message}`);
-    return { reposted: false };
-  }
-
-  const { error } = await supabase.from("post_reposts").insert({ post_id: postId, user_address: viewer });
-  if (error) throw new Error(`Repost failed: ${error.message}`);
-  return { reposted: true };
 }
 
 export async function toggleBookmark(args: { postId: string; viewer: string }) {
