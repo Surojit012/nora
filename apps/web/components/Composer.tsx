@@ -399,29 +399,84 @@ export function Composer() {
         </div>
 
         {createPostMutation.isPending || uploadStage ? (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)" }}>
-              <span>{uploadStage ?? "Uploading"}</span>
-              <span>{Math.min(100, Math.max(0, uploadProgress))}%</span>
-            </div>
-            <div
-              style={{
-                marginTop: 6,
-                height: 6,
-                borderRadius: 999,
-                background: "var(--border2)",
-                overflow: "hidden"
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  width: `${Math.min(100, Math.max(0, uploadProgress))}%`,
-                  background: "var(--gold)",
-                  transition: "width 200ms ease"
-                }}
-              />
-            </div>
+          <div style={{ marginTop: 12 }}>
+            {(() => {
+              const steps = [
+                "Preparing",
+                "Registering on-chain",
+                "Uploading to Shelby",
+                "Finalizing",
+                "Done"
+              ];
+              const currentIdx = uploadStage ? Math.max(0, steps.indexOf(uploadStage)) : 0;
+              const clampedIdx = currentIdx === -1 ? 0 : currentIdx;
+              const pct = Math.min(100, Math.max(0, uploadProgress));
+              return (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)" }}>
+                    <span>{uploadStage ?? "Uploading"}</span>
+                    <span>{pct}%</span>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 8,
+                      height: 6,
+                      borderRadius: 999,
+                      background: "var(--border2)",
+                      overflow: "hidden"
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${pct}%`,
+                        background: "var(--gold)",
+                        transition: "width 200ms ease"
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {steps.map((step, idx) => {
+                      const isComplete = idx < clampedIdx || (step === "Done" && uploadStage === "Done");
+                      const isActive = idx === clampedIdx && uploadStage !== "Done";
+                      return (
+                        <div
+                          key={step}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            fontSize: 11,
+                            color: isComplete ? "var(--text)" : isActive ? "var(--gold)" : "var(--muted)"
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: 999,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              border: `1px solid ${isComplete ? "var(--gold)" : "var(--border2)"}`,
+                              background: isComplete ? "var(--gold)" : "transparent",
+                              color: isComplete ? "var(--background)" : "inherit",
+                              fontSize: 10,
+                              fontWeight: 600
+                            }}
+                          >
+                            {isComplete ? "✓" : idx + 1}
+                          </span>
+                          <span>{step}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         ) : null}
 
