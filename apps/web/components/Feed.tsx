@@ -14,7 +14,7 @@ export function Feed() {
   const viewer = account?.address?.toString() ?? "";
   const queryClient = useQueryClient();
   const mountedRef = useRef(false);
-  const [tab, setTab] = useState<"for-you" | "following" | "trending">("for-you");
+  const [tab, setTab] = useState<"for-you" | "trending">("for-you");
 
   useEffect(() => {
     mountedRef.current = true;
@@ -75,13 +75,6 @@ export function Feed() {
           </button>
           <button
             type="button"
-            className={`tab${tab === "following" ? " active" : ""}`}
-            onClick={() => setTab("following")}
-          >
-            Following
-          </button>
-          <button
-            type="button"
             className={`tab${tab === "trending" ? " active" : ""}`}
             onClick={() => setTab("trending")}
           >
@@ -118,11 +111,7 @@ export function Feed() {
               <span className="tweet-handle">yet</span>
             </div>
             <div className="tweet-text">
-              {tab === "following" && !viewer
-                ? "Connect wallet to see posts from people you follow."
-                : tab === "following"
-                  ? "No posts yet. Follow some people to populate this feed."
-                  : "No posts yet."}
+              No posts yet.
             </div>
           </div>
         </div>

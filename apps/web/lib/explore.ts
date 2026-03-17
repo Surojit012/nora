@@ -16,17 +16,6 @@ function clampInt(value: unknown, min: number, max: number, fallback: number) {
   return Math.max(min, Math.min(max, Math.trunc(n)));
 }
 
-async function listViewerFollowingAddresses(viewer: string) {
-  const addr = normalizeAddress(viewer);
-  if (!addr) return [];
-  const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from("follows")
-    .select("following_address")
-    .eq("follower_address", addr);
-  if (error) throw new Error(`Follows read failed: ${error.message}`);
-  return (data ?? []).map((row: any) => normalizeAddress(row.following_address));
-}
 
 function getTagsForPostsFromContent(posts: Post[]) {
   const map = new Map<string, string[]>();
@@ -124,18 +113,12 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
     viewer: viewer || undefined
   });
 
-  // For-you uses viewer tag affinity and following state.
+  // For-you uses viewer tag affinity; without viewer, fall back to trending ranking.
   let viewerTagWeights = new Map<string, number>();
   let tagsByPost = new Map<string, string[]>();
-  let followingSet = new Set<string>();
 
   if (mode === "for_you" && viewer) {
-    const [signalPostIds, followingAddresses] = await Promise.all([
-      listViewerSignalPostIds(viewer, 120),
-      listViewerFollowingAddresses(viewer)
-    ]);
-    followingSet = new Set(followingAddresses);
-
+    const signalPostIds = await listViewerSignalPostIds(viewer, 120);
     const signalTags = getTagsForPostsFromContent(
       pool.filter((p) => signalPostIds.includes(p.id))
     );
@@ -158,10 +141,7 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
     const tags = tagsByPost.get(post.id) ?? [];
     const interest = mode === "for_you" && viewer ? computeInterestBoost(tags, viewerTagWeights) : 0;
     
-    // Followed accounts get a massive boost in For You.
-    const followingBoost = (mode === "for_you" && viewer && followingSet.has(normalizeAddress(post.author))) ? 5.0 : 0;
-    
-    return { post, score: base + interest + followingBoost };
+    return { post, score: base + interest };
   });
 
   const sorted =

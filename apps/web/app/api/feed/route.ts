@@ -1,33 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getExploreFeed } from "@/lib/explore";
-import { listShelbyPosts } from "@/lib/shelbyServer";
-import { getInteractionSummaries } from "@/lib/interactions";
-import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { normalizeAddress } from "@/lib/addresses";
 
 const FeedQuerySchema = z.object({
-  mode: z.enum(["for_you", "following", "trending"]).default("for_you"),
+  mode: z.enum(["for_you", "trending"]).default("for_you"),
   viewer: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50)
 });
 
 function error(status: number, message: string, details?: string) {
   return NextResponse.json({ error: message, ...(details ? { details } : {}) }, { status });
-}
-
-import { normalizeAddress } from "@/lib/addresses";
-
-async function listFollowingAddresses(viewer: string) {
-  const supabase = getSupabaseAdmin();
-  const { data, error: dbError } = await supabase
-    .from("follows")
-    .select("following_address")
-    .eq("follower_address", viewer);
-
-  if (dbError) throw new Error(`Follows read failed: ${dbError.message}`);
-  return (data ?? [])
-    .map((row: { following_address?: string }) => normalizeAddress(row.following_address ?? ""))
-    .filter(Boolean);
 }
 
 export async function GET(request: NextRequest) {
@@ -46,34 +29,6 @@ export async function GET(request: NextRequest) {
     const viewerAddress = typeof viewer === "string" ? normalizeAddress(viewer) : "";
 
     console.log(`[API/FEED] Fetching mode=${mode}, viewer=${viewerAddress}`);
-
-    if (mode === "following") {
-      if (!viewerAddress) {
-        return NextResponse.json({ posts: [], interactions: {} }, { status: 200 });
-      }
-
-      const followingList = await listFollowingAddresses(viewerAddress);
-      const following = new Set(followingList);
-      following.add(viewerAddress);
-
-      console.log(`[API/FEED] ${viewerAddress} is following ${followingList.length} users`);
-
-      const poolSize = Math.max(800, limit * 20);
-      const allPosts = await listShelbyPosts({ limit: poolSize });
-      
-      const posts = allPosts.filter((post) => {
-        const authorNormalized = normalizeAddress(post.author);
-        return following.has(authorNormalized);
-      });
-
-      const selected = posts.slice(0, limit);
-      const interactions = await getInteractionSummaries({
-        postIds: selected.map((p) => p.id),
-        viewer: viewerAddress || undefined
-      });
-
-      return NextResponse.json({ posts: selected, interactions }, { status: 200 });
-    }
 
     const data = await getExploreFeed({
       mode: mode === "trending" ? "trending" : "for_you",
