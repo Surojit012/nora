@@ -15,9 +15,7 @@ function error(status: number, message: string, details?: string) {
   return NextResponse.json({ error: message, ...(details ? { details } : {}) }, { status });
 }
 
-function normalizeAddress(value: string) {
-  return value.trim().toLowerCase();
-}
+import { normalizeAddress } from "@/lib/addresses";
 
 async function listFollowingAddresses(viewer: string) {
   const supabase = getSupabaseAdmin();
@@ -47,18 +45,26 @@ export async function GET(request: NextRequest) {
     const { mode, viewer, limit } = parsed.data;
     const viewerAddress = typeof viewer === "string" ? normalizeAddress(viewer) : "";
 
+    console.log(`[API/FEED] Fetching mode=${mode}, viewer=${viewerAddress}`);
+
     if (mode === "following") {
       if (!viewerAddress) {
         return NextResponse.json({ posts: [], interactions: {} }, { status: 200 });
       }
 
-      const following = new Set(await listFollowingAddresses(viewerAddress));
+      const followingList = await listFollowingAddresses(viewerAddress);
+      const following = new Set(followingList);
       following.add(viewerAddress);
 
+      console.log(`[API/FEED] ${viewerAddress} is following ${followingList.length} users`);
+
       const poolSize = Math.max(800, limit * 20);
-      const posts = (await listShelbyPosts({ limit: poolSize })).filter((post) =>
-        following.has(normalizeAddress(post.author))
-      );
+      const allPosts = await listShelbyPosts({ limit: poolSize });
+      
+      const posts = allPosts.filter((post) => {
+        const authorNormalized = normalizeAddress(post.author);
+        return following.has(authorNormalized);
+      });
 
       const selected = posts.slice(0, limit);
       const interactions = await getInteractionSummaries({

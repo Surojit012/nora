@@ -5,6 +5,7 @@ import { extractMentions } from "@/lib/mentions";
 import type { PublicUser } from "@/lib/identity";
 import { ShelbyNodeClient } from "@shelby-protocol/sdk/node";
 import { Network } from "@aptos-labs/ts-sdk";
+import { normalizeAddress } from "@/lib/addresses";
 
 export type NotificationType = "like" | "follow" | "mention";
 
@@ -20,9 +21,7 @@ export type NotificationItem = {
   actorUser?: Pick<PublicUser, "username" | "avatar">;
 };
 
-function normalizeAddress(value: string): string {
-  return value.trim().toLowerCase();
-}
+// Address normalization moved to @/lib/addresses
 
 function parsePostId(postId: string): { owner: string; blobName: string } | null {
   const id = postId.trim();

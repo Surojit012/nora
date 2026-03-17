@@ -9,6 +9,7 @@ import path from "node:path";
 import { Post } from "@/lib/types";
 import { extractHashtags } from "@/lib/hashtags";
 import { emitMentionsFromText } from "@/lib/notifications";
+import { normalizeAddress } from "@/lib/addresses";
 
 const POST_PREFIX = "nora/posts/";
 const MAX_POST_LENGTH = 280;
@@ -358,9 +359,7 @@ async function writePostIndex(index: PostIndex) {
   await fs.writeFile(POST_INDEX_FILE, JSON.stringify(index), "utf8");
 }
 
-function normalizeAddress(value: string): string {
-  return value.trim().toLowerCase();
-}
+// Address normalization moved to @/lib/addresses
 
 async function upsertPostIndexRow(row: Omit<PostBlobRow, "created_at">) {
   void row;

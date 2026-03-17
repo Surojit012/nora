@@ -8,14 +8,24 @@ import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type ExploreMode = "for_you" | "trending" | "latest";
 
-function normalizeAddress(value: string): string {
-  return value.trim().toLowerCase();
-}
+import { normalizeAddress } from "@/lib/addresses";
 
 function clampInt(value: unknown, min: number, max: number, fallback: number) {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   return Math.max(min, Math.min(max, Math.trunc(n)));
+}
+
+async function listViewerFollowingAddresses(viewer: string) {
+  const addr = normalizeAddress(viewer);
+  if (!addr) return [];
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from("follows")
+    .select("following_address")
+    .eq("follower_address", addr);
+  if (error) throw new Error(`Follows read failed: ${error.message}`);
+  return (data ?? []).map((row: any) => normalizeAddress(row.following_address));
 }
 
 function getTagsForPostsFromContent(posts: Post[]) {
@@ -114,12 +124,18 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
     viewer: viewer || undefined
   });
 
-  // For-you uses viewer tag affinity; without viewer, fall back to trending ranking.
+  // For-you uses viewer tag affinity and following state.
   let viewerTagWeights = new Map<string, number>();
   let tagsByPost = new Map<string, string[]>();
+  let followingSet = new Set<string>();
 
   if (mode === "for_you" && viewer) {
-    const signalPostIds = await listViewerSignalPostIds(viewer, 120);
+    const [signalPostIds, followingAddresses] = await Promise.all([
+      listViewerSignalPostIds(viewer, 120),
+      listViewerFollowingAddresses(viewer)
+    ]);
+    followingSet = new Set(followingAddresses);
+
     const signalTags = getTagsForPostsFromContent(
       pool.filter((p) => signalPostIds.includes(p.id))
     );
@@ -141,7 +157,11 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
     const base = computeBaseScore(post, s);
     const tags = tagsByPost.get(post.id) ?? [];
     const interest = mode === "for_you" && viewer ? computeInterestBoost(tags, viewerTagWeights) : 0;
-    return { post, score: base + interest };
+    
+    // Followed accounts get a massive boost in For You.
+    const followingBoost = (mode === "for_you" && viewer && followingSet.has(normalizeAddress(post.author))) ? 5.0 : 0;
+    
+    return { post, score: base + interest + followingBoost };
   });
 
   const sorted =
