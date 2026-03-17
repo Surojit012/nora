@@ -550,7 +550,7 @@ export async function listShelbyPosts(args?: { author?: string; limit?: number }
   const client = getShelbyClient();
   const signer = getSigner();
   const signerAddress = signer.accountAddress.toString();
-  const limit = Math.max(1, Math.min(200, args?.limit ?? DEFAULT_LIST_LIMIT));
+  const limit = Math.max(1, Math.min(1000, args?.limit ?? DEFAULT_LIST_LIMIT));
   const authorFilter = typeof args?.author === "string" && args.author.trim() ? normalizeAddress(args.author) : "";
 
   // List all blobs for the signer account via the SDK (SDK handles auth/indexer).
@@ -655,7 +655,7 @@ export async function getDebugBlobStats(args?: { author?: string; limit?: number
   const client = getShelbyClient();
   const signer = getSigner();
   const signerAddress = signer.accountAddress.toString();
-  const limit = Math.max(1, Math.min(500, args?.limit ?? 200));
+  const limit = Math.max(1, Math.min(2000, args?.limit ?? 200));
   const authorFilter = typeof args?.author === "string" && args.author.trim() ? normalizeAddress(args.author) : "";
 
   const blobs = await client.coordination.getAccountBlobs({ account: signer.accountAddress });

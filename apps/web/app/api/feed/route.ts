@@ -53,11 +53,9 @@ export async function GET(request: NextRequest) {
       }
 
       const following = new Set(await listFollowingAddresses(viewerAddress));
-      if (following.size === 0) {
-        return NextResponse.json({ posts: [], interactions: {} }, { status: 200 });
-      }
+      following.add(viewerAddress);
 
-      const poolSize = Math.max(200, limit * 8);
+      const poolSize = Math.max(800, limit * 20);
       const posts = (await listShelbyPosts({ limit: poolSize })).filter((post) =>
         following.has(normalizeAddress(post.author))
       );

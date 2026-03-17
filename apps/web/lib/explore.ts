@@ -105,7 +105,7 @@ export async function getExploreFeed(args: { mode?: string; viewer?: string; lim
   const viewer = typeof args.viewer === "string" ? normalizeAddress(args.viewer) : "";
   const mediaOnly = Boolean(args.mediaOnly);
 
-  const poolSize = mediaOnly ? 500 : mode === "latest" ? 120 : mode === "trending" ? 220 : 260;
+  const poolSize = mediaOnly ? 800 : mode === "latest" ? 400 : mode === "trending" ? 500 : 600;
   const poolAll = await listShelbyPosts({ limit: poolSize });
   const pool = mediaOnly ? poolAll.filter((p) => (p.attachments ?? []).some((a) => a.kind === "image" || a.kind === "video")) : poolAll;
 
