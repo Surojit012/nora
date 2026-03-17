@@ -17,8 +17,11 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "nora",
-  description: "A Shelby-powered social feed"
+  title: "Nora – Real‑Time Social Feed Platform | Powered by Shelby",
+  description: "Discover Nora, a sleek social feed app built on Shelby. Follow, bookmark, and explore content in real time. Join now!",
+  alternates: {
+    canonical: "https://nora-social.vercel.app/"
+  }
 };
 
 const themeInitScript = `
